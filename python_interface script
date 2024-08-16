@@ -29,7 +29,7 @@ def main():
     
     programmer = select_programmer(programmers)
     
-    port = input("Enter port (e.g., /dev/ttyUSB0 or COM3): ")
+    port = input("Enter port: ")
     firmware_file = input("Enter path to firmware file: ")
     
     program_device(programmer, port, firmware_file)
