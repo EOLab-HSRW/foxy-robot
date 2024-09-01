@@ -1,0 +1,37 @@
+name: Render Draw.io Diagram
+
+on:
+  push:
+    paths:
+      - 'diagrams/*.drawio'  # Triggers the workflow only if .drawio files are changed
+  workflow_dispatch:  # Allows manual triggering of the workflow
+
+jobs:
+  render-drawio:
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Checkout repository content
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'  # Use a specific Node.js version
+
+      - name: Install draw.io-cli
+        run: npm install -g draw.io
+
+      - name: Render Draw.io to SVG
+        run: draw.io -x -f svg -o diagrams/diagrams.svg diagrams/diagrams.drawio
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
+
+          git add diagrams/diagram.svg
+          git commit -m 'Auto-update diagram.svg from diagram.drawio'
+          git push
+
