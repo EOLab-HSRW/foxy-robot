@@ -21,7 +21,7 @@ jobs:
           node-version: '14'  # Use a specific Node.js version
 
       - name: Install draw.io-cli
-        run: npm install -g draw.io
+        run: "wget https://github.com/jgraph/drawio-desktop/releases/download/v24.7.8/drawio-amd64-24.7.8.deb && dpkg -i drawio-amd64-24.7.8.deb && apt-get install -f -y"
 
       - name: Render Draw.io to SVG
         run: draw.io -x -f svg -o diagrams/diagrams.svg diagrams/diagrams.drawio
