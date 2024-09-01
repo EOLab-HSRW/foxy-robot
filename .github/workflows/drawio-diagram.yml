@@ -17,20 +17,19 @@ jobs:
 
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
-        with:
-          node-version: '14'  # Use a specific Node.js version
 
-      - name: Install draw.io-cli
-        run: "wget https://github.com/jgraph/drawio-desktop/releases/download/v24.7.8/drawio-amd64-24.7.8.deb && sudo apt install ./drawio-amd64-24.7.8.deb"
-
-      - name: Render Draw.io to SVG
-        run: drawio -x -o diagrams/diagrams.svg diagrams/diagrams.drawio
+      - name: Run Draw.io in Docker container
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/diagrams:/diagrams \
+            -e DISPLAY=:99 \
+            jgraph/drawio \
+            xvfb-run -a drawio -x -o /diagrams/duckiebot-pintout.svg /diagrams/diagrams.drawio
 
       - name: Commit and push changes
         run: |
           git config --global user.name 'github-actions'
           git config --global user.email 'github-actions@github.com'
-
           git add diagrams/diagram.svg
           git commit -m 'Auto-update diagram.svg from diagram.drawio'
           git push
