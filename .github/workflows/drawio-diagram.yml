@@ -18,6 +18,10 @@ jobs:
       - name: Set up Node.js environment
         uses: actions/setup-node@v3
 
+      - name: Build Custom Draw.io Docker Image
+        run: |
+          docker build -t custom-drawio .
+
       - name: Run Draw.io in Docker container
         run: |
           docker run --rm \
