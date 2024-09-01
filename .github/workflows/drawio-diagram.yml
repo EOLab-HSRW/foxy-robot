@@ -24,7 +24,7 @@ jobs:
         run: "wget https://github.com/jgraph/drawio-desktop/releases/download/v24.7.8/drawio-amd64-24.7.8.deb && sudo apt install ./drawio-amd64-24.7.8.deb"
 
       - name: Render Draw.io to SVG
-        run: drawio -x -f svg -o diagrams/diagrams.svg diagrams/diagrams.drawio
+        run: drawio -x -o diagrams/diagrams.svg diagrams/diagrams.drawio
 
       - name: Commit and push changes
         run: |
