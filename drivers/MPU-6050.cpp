@@ -1,110 +1,109 @@
 #include <iostream>
-#include <cstdint>
 #include <unistd.h>
 #include <jetgpio.h>
 
-class MPU6050 {
-private:
-    int i2cHandle;
-    const int MPU6050_SLAVE_ADDRESS = 0x68;
-    const int PWR_MGMT_1 = 0x6B;
-    const int ACCEL_CONFIG = 0x1C;
-    const int ACCEL_RANGE_4G = 0x08;
-    const int GYRO_CONFIG = 0x1B;
-    const int GYRO_RANGE_250DEG = 0x00;
-    const float GYRO_SCALE_MODIFIER_250DEG = 131.0;
-    const int GYRO_XOUT0 = 0x43;
-    const int GYRO_YOUT0 = 0x45;
-    const int GYRO_ZOUT0 = 0x47;
+/* MPU-6050 Registers */
+const int MPU6050_SLAVE_ADDRESS = 0x68;
+const int PWR_MGMT_1 = 0x6B;
+const int ACCEL_CONFIG = 0x1C;
+const int ACCEL_RANGE_4G = 0x08;
+const int GYRO_CONFIG = 0x1B;
+const int GYRO_RANGE_250DEG = 0x00;
+const float GYRO_SCALE_MODIFIER_250DEG = 131.0; // value from the MPU datashee
+const float ACCEL_SCALE_MODIFIER_4G = 8192.0;  // value from the MPU datasheet
+const int GYRO_XOUT0 = 0x43;
+const int GYRO_YOUT0 = 0x45;
+const int GYRO_ZOUT0 = 0x47;
+const int ACCEL_XOUT0 = 0x3B;
+const int ACCEL_YOUT0 = 0x3D;
+const int ACCEL_ZOUT0 = 0x3F;
 
-public:
-    MPU6050() {
-        // Initialize JETGPIO
-        int Init = gpioInitialise();
-        if (Init < 0) {
-            std::cerr << "JETGPIO initialization failed with error code: " << Init << std::endl;
-            exit(Init);
-        } else {
-            std::cout << "JETGPIO initialized successfully with return code: " << Init << std::endl;
-        }
-
-        // Opens the I2C connection to MPU6050
-        i2cHandle = i2cOpen(0, MPU6050_SLAVE_ADDRESS);
-        if (i2cHandle < 0) {
-            std::cerr << "Failed to open I2C with error code: " << i2cHandle << std::endl;
-            gpioTerminate();
-            exit(i2cHandle);
-        } else {
-            std::cout << "I2C connection opened successfully. Handler: " << i2cHandle << std::endl;
-        }
-
-        // Wake up MPU6050
-        writeRegister(PWR_MGMT_1, 0x00);
-        usleep(100000);
-
-        // Set the accelerometer range to 4G
-        writeRegister(ACCEL_CONFIG, ACCEL_RANGE_4G);
-        usleep(100000);
-
-        // Set the gyroscope range to 250 deg/second
-        writeRegister(GYRO_CONFIG, GYRO_RANGE_250DEG);
-        usleep(100000);
+/* Function to combine high and low bytes into a signed 16-bit value, similar to that of the Jetgpio_i2c*/
+int16_t combineBytes(uint8_t high, uint8_t low) {
+    int16_t value = (high << 8) | low;
+    if (value >= 0x8000) {
+        value = -(65535 - value + 1);
     }
+    return value;
+}
 
-    ~MPU6050() {
-        // Close I2C connection
-        int i2cCloseStatus = i2cClose(i2cHandle);
-        if (i2cCloseStatus >= 0) {
-            std::cout << "I2C connection closed successfully." << std::endl;
-        } else {
-            std::cerr << "Failed to close I2C connection with error code: " << i2cCloseStatus << std::endl;
-        }
-
-        // Terminate GPIO
-        gpioTerminate();
-    }
-
-    // Function (write a byte of data to a specific register)
-    void writeRegister(int reg, int data) {
-        int writeStatus = i2cWriteByteData(i2cHandle, MPU6050_SLAVE_ADDRESS, reg, data);
-        if (writeStatus < 0) {
-            std::cerr << "Failed to write to register: " << reg << " Error code: " << writeStatus << std::endl;
-        }
-    }
-
-    // Function (read gyroscope values from the MPU-6050)
-    float readGyroValue(int highReg, int lowReg) {
-        int high = i2cReadByteData(i2cHandle, MPU6050_SLAVE_ADDRESS, highReg);
-        int low = i2cReadByteData(i2cHandle, MPU6050_SLAVE_ADDRESS, lowReg);
-        int16_t value = (high << 8) | low;
-
-        if (value >= 0x8000) {
-            value = -(65535 - value + 1);
-        }
-
-        return value / GYRO_SCALE_MODIFIER_250DEG;
-    }
-
-    void readGyroscope() {
-        for (int i = 0; i < 1000; i++) {
-            float gyroX = readGyroValue(GYRO_XOUT0, GYRO_XOUT0 + 1);
-            float gyroY = readGyroValue(GYRO_YOUT0, GYRO_YOUT0 + 1);
-            float gyroZ = readGyroValue(GYRO_ZOUT0, GYRO_ZOUT0 + 1);
-
-            std::cout << "Gyro X: " << gyroX << " Gyro Y: " << gyroY << " Gyro Z: " << gyroZ << std::endl;
-
-            usleep(10000); 
-        }
-    }
-};
-
-// for the test.cpp
 int main() {
-    // Create an MPU6050 object to initialize the sensor
-    MPU6050 mpu;
+    int Init;
+    
+    // Gyroscope and Accelerometer variables initialize to 0's
+    float gyro_x = 0, gyro_y = 0, gyro_z = 0;
+    float accel_x = 0, accel_y = 0, accel_z = 0;
 
-    // Read and display gyroscope values
-    mpu.readGyroscope();
+    // Jetgpio Initialization
+    Init = gpioInitialise();
+    if (Init < 0) {
+        /* jetgpio initialization failed */
+        std::cerr << "Jetgpio initialization failed with code: " << Init << std::endl;
+        exit(Init);
+    } else {
+        /* jetgpio initialization okay */
+        std::cout << "Jetgpio initialized successfully." << std::endl;
+    }
 
+    // Openning the connection to the i2c MPU-6050 on bus 0
+    int MPU6050 = i2cOpen(0, MPU6050_SLAVE_ADDRESS);
+    if (MPU6050 < 0) {
+        /* Problem encountered openning the i2c port */
+        std::cerr << "Failed to open I2C connection with MPU6050, error code: " << MPU6050 << std::endl;
+        gpioTerminate();
+        return -1;
+    }
+    /* Openning i2c port ok */
+    std::cout << "I2C connection to MPU6050 opened successfully." << std::endl;
+
+    // Wake up MPU-6050 (it starts in sleep mode)
+    i2cWriteByteData(MPU6050, PWR_MGMT_1, 0x00);
+    usleep(100000);
+
+    // Set up Accelerometer range to 4G
+    i2cWriteByteData(MPU6050, ACCEL_CONFIG, ACCEL_RANGE_4G);
+    usleep(100000);
+
+    // Set up Gyroscope range to 250 deg/sec
+    i2cWriteByteData(MPU6050, GYRO_CONFIG, GYRO_RANGE_250DEG);
+    usleep(100000);
+
+    // Main loop to read gyroscope and accelerometer data
+    for (int i = 0; i < 1000; ++i) {
+        // Read gyroscope values
+        uint8_t gyro_x_H = i2cReadByteData(MPU6050, GYRO_XOUT0);
+        uint8_t gyro_x_L = i2cReadByteData(MPU6050, GYRO_XOUT0 + 1);
+        gyro_x = combineBytes(gyro_x_H, gyro_x_L) / GYRO_SCALE_MODIFIER_250DEG;
+
+        uint8_t gyro_y_H = i2cReadByteData(MPU6050, GYRO_YOUT0);
+        uint8_t gyro_y_L = i2cReadByteData(MPU6050, GYRO_YOUT0 + 1);
+        gyro_y = combineBytes(gyro_y_H, gyro_y_L) / GYRO_SCALE_MODIFIER_250DEG;
+
+        uint8_t gyro_z_H = i2cReadByteData(MPU6050, GYRO_ZOUT0);
+        uint8_t gyro_z_L = i2cReadByteData(MPU6050, GYRO_ZOUT0 + 1);
+        gyro_z = combineBytes(gyro_z_H, gyro_z_L) / GYRO_SCALE_MODIFIER_250DEG;
+
+        // Read accelerometer values
+        uint8_t accel_x_H = i2cReadByteData(MPU6050, ACCEL_XOUT0);
+        uint8_t accel_x_L = i2cReadByteData(MPU6050, ACCEL_XOUT0 + 1);
+        accel_x = combineBytes(accel_x_H, accel_x_L) / ACCEL_SCALE_MODIFIER_4G;
+
+        uint8_t accel_y_H = i2cReadByteData(MPU6050, ACCEL_YOUT0);
+        uint8_t accel_y_L = i2cReadByteData(MPU6050, ACCEL_YOUT0 + 1);
+        accel_y = combineBytes(accel_y_H, accel_y_L) / ACCEL_SCALE_MODIFIER_4G;
+
+        uint8_t accel_z_H = i2cReadByteData(MPU6050, ACCEL_ZOUT0);
+        uint8_t accel_z_L = i2cReadByteData(MPU6050, ACCEL_ZOUT0 + 1);
+        accel_z = combineBytes(accel_z_H, accel_z_L) / ACCEL_SCALE_MODIFIER_4G;
+
+        // Output values for debugging
+        std::cout << "Gyro X: " << gyro_x << " | Gyro Y: " << gyro_y << " | Gyro Z: " << gyro_z << std::endl;
+        std::cout << "Accel X: " << accel_x << " | Accel Y: " << accel_y << " | Accel Z: " << accel_z << std::endl;
+        usleep(10000);  
+    }
+
+    // Close the I2C connection
+    i2cClose(MPU6050);
+    gpioTerminate();
     return 0;
 }
