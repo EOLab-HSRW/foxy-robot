@@ -1,0 +1,40 @@
+- hosts: localhost
+  vars:
+    ros2_gpg_key_url: https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
+    ros2_repository_url: http://packages.ros.org/ros2/ubuntu
+    ros2_distro: humble
+    robot_name: foxy
+    ws_name: foxy_robot_ws
+  pre_tasks:
+    - name: Apt update
+      become: true
+      apt:
+        force_apt_get: true
+        update_cache: true
+        state: present
+  tasks:
+    - name: Install ROS
+      import_tasks: tasks/ros.yml
+      tags:
+        - ros
+        - developer
+    - name: Set environment information
+      import_tasks: tasks/env.yml
+      tags: 
+        - env
+        - developer
+    - name: System tooling
+      import_tasks: tasks/tooling.yml
+      tags: 
+        - tooling
+        - developer
+    - name: Install dependencies
+      import_tasks: tasks/rosdep.yml
+      tags:
+        - rosdep
+        - developer
+  handlers:
+    - name: Reload ~/.bashrc
+      shell: source ~/.bashrc
+      args:
+        executable: /bin/bash
