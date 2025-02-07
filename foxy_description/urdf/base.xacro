@@ -2,12 +2,8 @@
 <robot name="foxy_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- params description for xacro component -->
-  <!-- prefix: prefix the root frame -->
-  <xacro:macro name="foxy_base" params="prefix">
-
-    <!-- properties -->
-    <!-- root: name of the root frame of the robot -->
-    <xacro:property name="root" default="${prefix}base_link" />
+  <!-- root_frame: name of the root link frame -->
+  <xacro:macro name="foxy_base" params="root_frame">
 
     <material name="grey">
       <color rgba="0.7 0.7 0.7 1" />
@@ -21,7 +17,7 @@
 
     <link name="base_footprint" />
 
-    <link name="${root}">
+    <link name="${root_frame}">
       <visual>
         <geometry>
           <box size="0.6 0.4 0.2" />
@@ -32,7 +28,7 @@
     </link>
 
     <joint name="base_joint" type="fixed">
-      <parent link="${root}" />
+      <parent link="${root_frame}" />
       <child link="base_footprint" />
       <origin xyz="0 0 -0.1" rpy="0 0 0" />
     </joint>
@@ -68,21 +64,21 @@
     </link>
 
     <joint name="base_left_wheel_joint" type="continuous">
-      <parent link="${root}" />
+      <parent link="${root_frame}" />
       <child link="left_wheel" />
       <origin xyz="-0.15 0.225 0" rpy="0 0 0" />
       <axis xyz="0 1 0"/>
     </joint>
 
     <joint name="base_right_wheel_joint" type="continuous">
-      <parent link="${root}" />
+      <parent link="${root_frame}" />
       <child link="right_wheel" />
       <origin xyz="-0.15 -0.225 0" rpy="0 0 0" />
       <axis xyz="0 1 0"/>
     </joint>
 
     <joint name="base_caster_wheel_joint" type="fixed">
-      <parent link="${root}" />
+      <parent link="${root_frame}" />
       <child link="caster_wheel" />
       <origin xyz="0.2 0 -0.05" rpy="0 0 0" />
     </joint>

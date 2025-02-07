@@ -6,10 +6,10 @@
 
   <!-- set of properties for internal use (not used by launch) -->
   <xacro:property name="namespace" default="$(arg robot_name)"/>
-  <xacro:property name="prefix" default="${namespace}_" />
+  <xacro:property name="root_frame" default="${namespace}_base_link" />
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
 
-  <xacro:foxy_base prefix="${prefix}"/>
+  <xacro:foxy_base root_frame="${root_frame}"/>
 
 </robot>
