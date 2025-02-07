@@ -7,7 +7,7 @@ from launch_ros.substitutions import FindPackageShare
 
 def launch_setup(context):
 
-    urdf_path = PathJoinSubstitution([FindPackageShare("foxy_description"), "urdf", "model.urdf"])
+    urdf_path = PathJoinSubstitution([FindPackageShare("foxy_description"), "urdf", "foxy.urdf.xacro"])
 
     robot_description = {"robot_description": xacro.process_file(urdf_path.perform(context)).toxml()}
 

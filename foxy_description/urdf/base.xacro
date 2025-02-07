@@ -1,10 +1,14 @@
 <?xml-model href="https://raw.githubusercontent.com/harleylara/urdfdom/refs/heads/movespecification/xsd/urdf.xsd"?>
 <robot name="foxy_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- params description -->
-  <!-- name: prefix the robot root frame -->
+  <!-- params description for xacro component -->
+  <!-- prefix: prefix the root frame -->
+  <xacro:macro name="foxy_base" params="prefix">
 
-  <xacro:macro name="foxy_base" params="name">
+    <!-- properties -->
+    <!-- root: name of the root frame of the robot -->
+    <xacro:property name="root" default="${prefix}base_link" />
+
     <material name="grey">
       <color rgba="0.7 0.7 0.7 1" />
     </material>
@@ -17,7 +21,7 @@
 
     <link name="base_footprint" />
 
-    <link name="base_link">
+    <link name="${root}">
       <visual>
         <geometry>
           <box size="0.6 0.4 0.2" />
@@ -27,15 +31,11 @@
       </visual>
     </link>
 
-    <link name="lidar">
-      <visual>
-        <geometry>
-          <cylinder radius="0.1" length="0.05" />
-        </geometry>
-        <origin xyz="0 0 0" rpy="0 0 0" />
-        <material name="white" />
-      </visual>
-    </link>
+    <joint name="base_joint" type="fixed">
+      <parent link="${root}" />
+      <child link="base_footprint" />
+      <origin xyz="0 0 -0.1" rpy="0 0 0" />
+    </joint>
 
     <link name="left_wheel">
       <visual>
@@ -67,32 +67,20 @@
       </visual>
     </link>
 
-    <joint name="base_joint" type="fixed">
-      <parent link="base_footprint" />
-      <child link="base_link" />
-      <origin xyz="0 0 0.1" rpy="0 0 0" />
-    </joint>
-
-    <joint name="base_lidar_joint" type="fixed">
-      <parent link="base_link" />
-      <child link="lidar" />
-      <origin xyz="0 0 0.225" rpy="0 0 0" />
-    </joint>
-
     <joint name="base_left_wheel_joint" type="fixed">
-      <parent link="base_link" />
+      <parent link="${root}" />
       <child link="left_wheel" />
       <origin xyz="-0.15 0.225 0" rpy="0 0 0" />
     </joint>
 
     <joint name="base_right_wheel_joint" type="fixed">
-      <parent link="base_link" />
+      <parent link="${root}" />
       <child link="right_wheel" />
       <origin xyz="-0.15 -0.225 0" rpy="0 0 0" />
     </joint>
 
     <joint name="base_caster_wheel_joint" type="fixed">
-      <parent link="base_link" />
+      <parent link="${root}" />
       <child link="caster_wheel" />
       <origin xyz="0.2 0 -0.05" rpy="0 0 0" />
     </joint>

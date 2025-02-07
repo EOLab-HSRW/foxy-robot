@@ -4,7 +4,12 @@
   <!-- The following set of ARGUMENTS are used by launch -->
   <xacro:arg name="robot_name" default="default"/>
 
-  <xacro:include filename="$(find foxy_description)/urdf/foxy_base.xacro"/>
-  <xacro:foxy_base/>
+  <!-- set of properties for internal use (not used by launch) -->
+  <xacro:property name="namespace" default="$(arg robot_name)"/>
+  <xacro:property name="prefix" default="${namespace}_" />
+
+  <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
+
+  <xacro:foxy_base prefix="${prefix}"/>
 
 </robot>
