@@ -1,0 +1,10 @@
+<?xml-model href="https://raw.githubusercontent.com/harleylara/urdfdom/refs/heads/movespecification/xsd/urdf.xsd"?>
+<robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <!-- The following set of ARGUMENTS are used by launch -->
+  <xacro:arg name="robot_name" default="default"/>
+
+  <xacro:include filename="$(find foxy_description)/urdf/foxy_base.xacro"/>
+  <xacro:foxy_base/>
+
+</robot>
