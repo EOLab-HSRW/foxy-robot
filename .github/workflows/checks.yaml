@@ -1,13 +1,18 @@
 name: Build and Test main
 
 on:
-
   pull_request:
     branches:
       - main
+    paths:
+      - '!/{.vitepress,docs,drivers,task}/**'
+      - '!/*'
   push:
     branches:
       - main
+    paths:
+      - '!/{.vitepress,docs,drivers,task}/**'
+      - '!/*'
 
 jobs:
   build-and-test:
@@ -20,7 +25,6 @@ jobs:
       fail-fast: false
     steps:
       - name: Install deps
-
         run: sudo apt-get update && sudo apt-get install -y wget python3-vcstool python3-colcon-coveragepy-result
       - name: build and test
         uses: ros-tooling/action-ros-ci@0.3.5
