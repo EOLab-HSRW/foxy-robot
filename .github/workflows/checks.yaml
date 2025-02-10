@@ -5,12 +5,14 @@ on:
     branches:
       - main
     paths:
+      - '.github/workflows/checks.yaml'
       - '!/{.vitepress,docs,drivers,task}/**'
       - '!/*'
   push:
     branches:
       - main
     paths:
+      - '.github/workflows/checks.yaml'
       - '!/{.vitepress,docs,drivers,task}/**'
       - '!/*'
 
