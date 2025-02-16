@@ -75,7 +75,7 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        foxy_base_link:
+        foxy/base_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -107,7 +107,9 @@ Visualization Manager:
           Value: true
         caster_wheel:
           Value: true
-        foxy_base_link:
+        foxy/base_link:
+          Value: true
+        foxy/odom:
           Value: true
         left_wheel:
           Value: true
@@ -119,7 +121,7 @@ Visualization Manager:
       Show Axes: true
       Show Names: false
       Tree:
-        foxy_base_link:
+        foxy/base_link:
           base_footprint:
             {}
           caster_wheel:
@@ -128,12 +130,14 @@ Visualization Manager:
             {}
           right_wheel:
             {}
+        foxy/odom:
+          {}
       Update Interval: 0
       Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: foxy_base_link
+    Fixed Frame: foxy/odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -212,5 +216,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1349
-  X: 368
-  Y: 66
+  X: 304
+  Y: 2

@@ -12,14 +12,7 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     declared_args = []
 
     declared_args.append(DeclareLaunchArgument(
-        "use_sim",
-        default_value="true",
-        description="Clock source."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
         "robot_name",
-        default_value="foxy",
         description="Robot name."
     ))
 
@@ -74,7 +67,8 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
             Node(
                 package="controller_manager",
                 executable="spawner",
-                arguments=["joint_state_broadcaster"],
+                arguments=["joint_state_broadcaster", "diff_drive_base_controller"],
+                output='screen'
             ),
         ]
     )
@@ -101,10 +95,18 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                     "-x", "0",
                     "-y", "0",
                     "-z", "0.3"
-                ]
+                ],
+                output='screen'
             ),
         ],
         condition=LaunchConfigurationEquals("system", "gz")
+    )
+
+    bridge = Node(
+        package='ros_gz_bridge',
+        executable='parameter_bridge',
+        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
+        output='screen'
     )
 
     rviz2 = Node(
@@ -121,6 +123,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         robot_state_publisher_node,
         controllers,
         gz,
+        bridge,
         rviz2
     ]
 
