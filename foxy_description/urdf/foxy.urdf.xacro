@@ -3,16 +3,19 @@
   <!-- The following set of ARGUMENTS are used by launch -->
   <xacro:arg name="robot_name" default="default"/>
   <xacro:arg name="system" default="none"/>
+  <xacro:arg name="distro" default="none"/> <!-- for internal use -->
 
   <!-- set of properties for internal use (not used by launch) -->
   <xacro:property name="namespace" default="$(arg robot_name)"/>
   <xacro:property name="root_frame" default="${namespace}_base_link" />
+  <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'galatic', 'foxy']}"/>
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
 
   <xacro:foxy_base root_frame="${root_frame}"/>
 
-  <xacro:if value="${xacro.arg('system') == 'gz'}">
+  <xacro:if value="${xacro.arg('system') == 'gz' and xacro.arg('distro') in ros2_gz_before_renamed}">
+    <!-- the plugin was renamed to gz_ros2_control from Iron -->
     <ros2_control name="GazeboSimSystem" type="system">
       <hardware>
         <plugin>ign_ros2_control/IgnitionSystem</plugin>
@@ -36,7 +39,6 @@
     </ros2_control>
 
     <gazebo>
-      <!-- the plugin was renamed to gz_ros2_control from Iron -->
       <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
         <ros>
           <namespace>${namespace}</namespace>
@@ -45,7 +47,5 @@
       </plugin>
     </gazebo>
   </xacro:if>
-
-
 
 </robot>

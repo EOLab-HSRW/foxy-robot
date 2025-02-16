@@ -1,6 +1,7 @@
-from launch.conditions import LaunchConfigurationEquals
-from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
+import os
 import xacro
+from launch.conditions import IfCondition, LaunchConfigurationEquals
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch import LaunchDescription, LaunchDescriptionEntity
 from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction
 from launch_ros.substitutions import FindPackageShare
@@ -25,8 +26,20 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     declared_args.append(DeclareLaunchArgument(
         "system",
         default_value="gz",
-        description="Choose system to start, e.g. physical",
-        choices=['gz', 'none', 'real']
+        description="Choose system to start, e.g. robot or gz for Gazebo",
+        choices=['gz', 'robot']
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "rviz_start",
+        default_value="true",
+        description="Launch Rviz"
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "rviz_config",
+        default_value=PathJoinSubstitution([FindPackageShare("foxy_bringup"), "config", "default.rviz"]),
+        description="Configuration file for launching rviz."
     ))
 
     return declared_args
@@ -34,15 +47,16 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
 
 def launch_setup(context) -> list[LaunchDescriptionEntity]:
 
+    use_sim_time = {"use_sim_time": True if LaunchConfiguration("system").perform(context) != 'robot' else False }
+
     robot_desc_content = xacro.process_file(
         PathJoinSubstitution([FindPackageShare("foxy_description"), "urdf", "foxy.urdf.xacro"]).perform(context),
         mappings={
             "robot_name": LaunchConfiguration("robot_name").perform(context),
-            "system": LaunchConfiguration("system").perform(context)
+            "system": LaunchConfiguration("system").perform(context),
+            "distro": os.getenv("ROS_DISTRO")
         }
     ).toxml()
-
-    print(robot_desc_content)
 
     robot_state_publisher_node = Node(
         package="robot_state_publisher",
@@ -50,7 +64,18 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         name="robot_state_publisher",
         output="both",
         parameters=[
-            {"robot_description": robot_desc_content}
+            {"robot_description": robot_desc_content},
+            use_sim_time
+        ]
+    )
+
+    controllers = GroupAction(
+        actions=[
+            Node(
+                package="controller_manager",
+                executable="spawner",
+                arguments=["joint_state_broadcaster"],
+            ),
         ]
     )
 
@@ -82,10 +107,21 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         condition=LaunchConfigurationEquals("system", "gz")
     )
 
+    rviz2 = Node(
+        package='rviz2',
+        executable='rviz2',
+        name='rviz2',
+        arguments=['-d', LaunchConfiguration("rviz_config")],
+        output='screen',
+        condition=IfCondition(LaunchConfiguration("rviz_start"))
+    )
+
     return [
         PushRosNamespace(LaunchConfiguration("robot_name")),
         robot_state_publisher_node,
-        gz
+        controllers,
+        gz,
+        rviz2
     ]
 
 
