@@ -13,7 +13,6 @@ setup(
         ('share/' + package_name, ['package.xml']),
         ('share/' + package_name + '/urdf', glob.glob('urdf/**/*', recursive=True)),
         ('share/' + package_name + '/launch', glob.glob('launch/*')),
-        ('share/' + package_name + '/config', glob.glob('config/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

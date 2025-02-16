@@ -1,4 +1,3 @@
-<?xml-model href="https://raw.githubusercontent.com/harleylara/urdfdom/refs/heads/movespecification/xsd/urdf.xsd"?>
 <robot name="foxy_base" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- params description for xacro component -->
@@ -25,6 +24,11 @@
         <origin xyz="0 0 0.1" rpy="0 0 0" />
         <material name="green" />
       </visual>
+      <collision>
+        <geometry>
+          <box size="0.6 0.4 0.2" />
+        </geometry>
+      </collision>
     </link>
 
     <joint name="base_joint" type="fixed">
@@ -41,6 +45,15 @@
         <origin xyz="0 0 0" rpy="1.57 0 0" />
         <material name="grey" />
       </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="0.1" length="0.05" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="1"/>
+        <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+      </inertial>
     </link>
 
     <link name="right_wheel">
@@ -51,6 +64,15 @@
         <origin xyz="0 0 0" rpy="1.57 0 0" />
         <material name="grey" />
       </visual>
+      <collision>
+        <geometry>
+          <cylinder radius="0.1" length="0.05" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="1"/>
+        <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+      </inertial>
     </link>
 
     <link name="caster_wheel">
@@ -61,6 +83,15 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <material name="grey" />
       </visual>
+      <collision>
+        <geometry>
+          <sphere radius="0.05" />
+        </geometry>
+      </collision>
+      <inertial>
+        <mass value="0.01"/>
+        <inertia ixx="0.4" ixy="0.0" ixz="0.0" iyy="0.4" iyz="0.0" izz="0.2"/>
+      </inertial>
     </link>
 
     <joint name="base_left_wheel_joint" type="continuous">
