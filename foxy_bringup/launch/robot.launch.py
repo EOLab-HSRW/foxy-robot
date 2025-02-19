@@ -98,15 +98,22 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 ],
                 output='screen'
             ),
+            Node(
+                package='ros_gz_bridge',
+                executable='parameter_bridge',
+                arguments=[
+                    '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
+                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/image@sensor_msgs/msg/Image[ignition.msgs.Image',
+                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo'
+                ],
+                # NOTE (harley): the expansion of gz topic only works for 1 level higher
+                # parameters=[
+                #     {"expand_gz_topic_names": True}
+                # ],
+                output='screen'
+            )
         ],
         condition=LaunchConfigurationEquals("system", "gz")
-    )
-
-    bridge = Node(
-        package='ros_gz_bridge',
-        executable='parameter_bridge',
-        arguments=['/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock'],
-        output='screen'
     )
 
     rviz2 = Node(
@@ -123,7 +130,6 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         robot_state_publisher_node,
         controllers,
         gz,
-        bridge,
         rviz2
     ]
 
