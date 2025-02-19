@@ -11,8 +11,13 @@
   <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'galatic', 'foxy']}"/>
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
+ :<xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
 
   <xacro:foxy_base root_frame="${root_frame}"/>
+
+  <xacro:rgb_camera_generic name="front_camera" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
+    <origin xyz="0.4 0 0.1" rpy="0 0 0" />
+  </xacro:rgb_camera_generic>
 
   <xacro:if value="${xacro.arg('system') == 'gz' and xacro.arg('distro') in ros2_gz_before_renamed}">
     <!-- the plugin was renamed to gz_ros2_control from Iron -->
@@ -39,6 +44,10 @@
     </ros2_control>
 
     <gazebo>
+      <!-- inserted at the top level of the <model> tag -->
+      <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
+        <render_engine>ogre</render_engine>
+      </plugin>
       <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
         <ros>
           <namespace>${namespace}</namespace>
