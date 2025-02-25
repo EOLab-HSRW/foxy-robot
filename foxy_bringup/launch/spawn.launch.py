@@ -1,6 +1,6 @@
 import os
 import xacro
-from launch.conditions import IfCondition, LaunchConfigurationEquals
+from launch.conditions import LaunchConfigurationEquals
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch import LaunchDescription, LaunchDescriptionEntity
 from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction
@@ -17,22 +17,30 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     ))
 
     declared_args.append(DeclareLaunchArgument(
+        "pos_x",
+        description="Robot spawn x position (only for simulation environments)."
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "pos_y",
+        description="Robot spawn y position (only for simulation environments)."
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "pos_z",
+        description="Robot spawn z position (only for simulation environments)."
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
         "system",
-        default_value="gz",
         description="Choose system to start, e.g. robot or gz for Gazebo",
         choices=['gz', 'robot']
     ))
 
     declared_args.append(DeclareLaunchArgument(
-        "rviz_start",
-        default_value="true",
-        description="Launch Rviz"
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "rviz_config",
-        default_value=PathJoinSubstitution([FindPackageShare("foxy_bringup"), "config", "default.rviz"]),
-        description="Configuration file for launching rviz."
+        "world",
+        default_value="empty.sdf",
+        description="World in simulation (only `gz` sim supported for now)."
     ))
 
     return declared_args
@@ -82,7 +90,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                     "gz_sim.launch.py"
                 ]),
                 launch_arguments={
-                    "gz_args": ["-r ", "empty.sdf"], # `-r` start running simulation immediately
+                    "gz_args": ["-r ", LaunchConfiguration("world")], # `-r` start running simulation immediately
                     'on_exit_shutdown': 'True'
                 }.items()
             ),
@@ -92,9 +100,9 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 arguments=[
                     "-name", LaunchConfiguration("robot_name"),
                     "-topic", "robot_description",
-                    "-x", "0",
-                    "-y", "0",
-                    "-z", "0.3"
+                    "-x", LaunchConfiguration("pos_x"),
+                    "-y", LaunchConfiguration("pos_y"),
+                    "-z", LaunchConfiguration("pos_z")
                 ],
                 output='screen'
             ),
@@ -116,21 +124,11 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         condition=LaunchConfigurationEquals("system", "gz")
     )
 
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', LaunchConfiguration("rviz_config")],
-        output='screen',
-        condition=IfCondition(LaunchConfiguration("rviz_start"))
-    )
-
     return [
         PushRosNamespace(LaunchConfiguration("robot_name")),
         robot_state_publisher_node,
         controllers,
         gz,
-        rviz2
     ]
 
 
