@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="rgb_camera_generic" params="name parent_link namespace system *origin">
+  <xacro:macro name="imu_generic" params="name parent_link namespace system *origin">
     <link name="${name}_link">
       <inertial>
         <mass value="0.01"/>
@@ -14,26 +14,17 @@
       <xacro:insert_block name="origin" />
     </joint>
     <xacro:if value="${system == 'gz'}">
-      <gazebo reference="${name}_link">
+      <gazebo>
         <plugin filename="gz-sim-imu-system"
           name="gz::sim::systems::Imu">
         </plugin>
-        <sensor name="${name}" type="camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
-            <image>
-              <width>1080</width>
-              <height>720</height>
-            </image>
-            <clip>
-              <near>0.1</near>
-              <far>100</far>
-            </clip>
-          </camera>
+      </gazebo>
+      <gazebo reference="${name}_link">
+        <sensor name="${name}" type="imu">
           <always_on>1</always_on>
-          <update_rate>30</update_rate>
+          <update_rate>100</update_rate>
           <visualize>true</visualize>
-          <topic>/${namespace}/${name}/image</topic>
+          <topic>/${namespace}/${name}/imu</topic>
         </sensor>
       </gazebo>
     </xacro:if>

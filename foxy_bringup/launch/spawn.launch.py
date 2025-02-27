@@ -66,6 +66,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         output="both",
         parameters=[
             {"robot_description": robot_desc_content},
+            # {"frame_prefix": f'{LaunchConfiguration("robot_name").perform(context)}/'},
             use_sim_time
         ]
     )
@@ -91,7 +92,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 ]),
                 launch_arguments={
                     "gz_args": ["-r ", LaunchConfiguration("world")], # `-r` start running simulation immediately
-                    'on_exit_shutdown': 'True'
+                    'on_exit_shutdown': 'True',
                 }.items()
             ),
             Node(
@@ -99,7 +100,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 executable="create",
                 arguments=[
                     "-name", LaunchConfiguration("robot_name"),
-                    "-topic", "robot_description",
+                    "-topic", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description",
                     "-x", LaunchConfiguration("pos_x"),
                     "-y", LaunchConfiguration("pos_y"),
                     "-z", LaunchConfiguration("pos_z")
@@ -112,8 +113,13 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 arguments=[
                     '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
                     f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/image@sensor_msgs/msg/Image[ignition.msgs.Image',
-                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo'
+                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo',
+                    f'/{LaunchConfiguration("robot_name").perform(context)}/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+                    f'/{LaunchConfiguration("robot_name").perform(context)}/lidar_sensor/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
                 ],
+                # remappings=[
+                #     (f'/{LaunchConfiguration("robot_name").perform(context)}/lidar_sensor/lidar', '/laser_scan')
+                # ],
                 # NOTE (harley): the expansion of gz topic only works for 1 level higher
                 # parameters=[
                 #     {"expand_gz_topic_names": True}
