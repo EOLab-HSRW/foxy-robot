@@ -15,7 +15,7 @@
     </joint>
     <xacro:if value="${system == 'gz'}">
       <gazebo reference="${name}_link">
-        <sensor name="${name}" type='gpu_lidar'>"
+        <sensor name="${name}_link" type='gpu_lidar'>"
           <pose relative_to='${name}_link'>0 0 0 0 0 0</pose>
           <ray>
             <scan>
@@ -42,7 +42,7 @@
           <update_rate>30</update_rate>
           <visualize>true</visualize>
           <topic>/${namespace}/${name}/scan</topic>
-          <!-- <frame_id>${name}_link</frame_id> -->
+          <frame_id>${name}_link</frame_id>
           <ignition_frame_id>${name}_link</ignition_frame_id>
         </sensor>
       </gazebo>
