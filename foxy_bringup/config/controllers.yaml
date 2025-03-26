@@ -21,6 +21,8 @@
     left_wheel_radius_multiplier: 1.0
     right_wheel_radius_multiplier: 1.0
 
+    tf_frame_prefix_enable: false
+    # tf_frame_prefix: "prefix"
     publish_rate: 50.0
     odom_frame_id: odom
     base_frame_id: base_link
@@ -32,7 +34,7 @@
     enable_odom_tf: true
 
     cmd_vel_timeout: 0.5
-    #publish_limited_velocity: true
+    # publish_limited_velocity: true
     use_stamped_vel: true
     #velocity_rolling_window_size: 10
 
