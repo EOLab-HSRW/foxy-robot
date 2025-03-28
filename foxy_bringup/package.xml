@@ -13,6 +13,7 @@
   <test_depend>python3-pytest</test_depend>
 
   <exec_depend condition="$ROS_DISTRO == humble">ign_ros2_control</exec_depend>
+  <exec_depen>ros2_controllers</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
