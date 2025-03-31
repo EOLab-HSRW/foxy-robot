@@ -1,7 +1,7 @@
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch import LaunchDescription, LaunchDescriptionEntity
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction, SetLaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
@@ -53,6 +53,24 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     ))
 
     declared_args.append(DeclareLaunchArgument(
+        "use_sim_time",
+        default_value="true",
+        description="Use simulation time from /clock topic"
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "robot_localization",
+        default_value="true",
+        description="Start robot localization for sensor fusion"
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
+        "slam_toolbox",
+        default_value="true",
+        description="Start SLAM Toolbox"
+    ))
+
+    declared_args.append(DeclareLaunchArgument(
         "rviz_config",
         default_value=PathJoinSubstitution([FindPackageShare("foxy_bringup"), "config", "default.rviz"]),
         description="Configuration file for launching rviz."
@@ -62,6 +80,11 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
 
 
 def launch_setup(context) -> list[LaunchDescriptionEntity]:
+
+    SetLaunchConfiguration(
+        name="use_sim_time",
+        value=("true" if LaunchConfiguration("system").perform(context) != 'robot' else "false")
+    )
 
     spawn_robot = IncludeLaunchDescription(
         PathJoinSubstitution(
@@ -78,21 +101,16 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
             "pos_z": LaunchConfiguration("pos_z"),
             "system": LaunchConfiguration("system"),
             "world": LaunchConfiguration("world"),
+            "use_sim_time": LaunchConfiguration("use_sim_time"),
+            "robot_localization": LaunchConfiguration("robot_localization"),
+            "slam_toolbox": LaunchConfiguration("slam_toolbox"),
+            "rviz_start": LaunchConfiguration("rviz_start")
         }.items(),
     )
 
-    rviz2 = Node(
-        package='rviz2',
-        executable='rviz2',
-        name='rviz2',
-        arguments=['-d', LaunchConfiguration("rviz_config")],
-        output='screen',
-        condition=IfCondition(LaunchConfiguration("rviz_start"))
-    )
 
     return [
         spawn_robot,
-        rviz2
     ]
 
 
