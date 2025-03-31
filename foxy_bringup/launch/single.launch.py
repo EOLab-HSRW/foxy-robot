@@ -42,7 +42,8 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
 
     declared_args.append(DeclareLaunchArgument(
         "world",
-        default_value="empty.sdf",
+        default_value="empty",
+        choices=["empty", "demo"],
         description="World in simulation (only `gz` sim supported for now)."
     ))
 
@@ -86,6 +87,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         value=("true" if LaunchConfiguration("system").perform(context) != 'robot' else "false")
     )
 
+
     spawn_robot = IncludeLaunchDescription(
         PathJoinSubstitution(
             [
@@ -100,7 +102,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
             "pos_y": LaunchConfiguration("pos_y"),
             "pos_z": LaunchConfiguration("pos_z"),
             "system": LaunchConfiguration("system"),
-            "world": LaunchConfiguration("world"),
+            "world": PathJoinSubstitution([FindPackageShare("foxy_description"), "worlds", f"{LaunchConfiguration('world').perform(context)}.sdf"]),
             "use_sim_time": LaunchConfiguration("use_sim_time"),
             "robot_localization": LaunchConfiguration("robot_localization"),
             "slam_toolbox": LaunchConfiguration("slam_toolbox"),

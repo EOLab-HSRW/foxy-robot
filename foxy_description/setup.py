@@ -14,6 +14,7 @@ setup(
         ('share/' + package_name + '/urdf', glob.glob('urdf/**/*', recursive=True)),
         ('share/' + package_name + '/launch', glob.glob('launch/*')),
         ('share/' + package_name + '/sensors', glob.glob('sensors/*')),
+        ('share/' + package_name + '/worlds', glob.glob('worlds/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
