@@ -43,7 +43,7 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     declared_args.append(DeclareLaunchArgument(
         "world",
         default_value="empty",
-        choices=["empty", "demo"],
+        choices=["empty", "demo", "easy"],
         description="World in simulation (only `gz` sim supported for now)."
     ))
 

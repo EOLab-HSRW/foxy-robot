@@ -15,6 +15,7 @@ setup(
         ('share/' + package_name + '/launch', glob.glob('launch/*')),
         ('share/' + package_name + '/sensors', glob.glob('sensors/*')),
         ('share/' + package_name + '/worlds', glob.glob('worlds/*')),
+        ('share/' + package_name + '/assets/duck', glob.glob('assets/duck/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
