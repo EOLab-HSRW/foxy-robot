@@ -19,7 +19,7 @@
   <xacro:foxy_base root_frame="${root_frame}"/>
 
   <xacro:rgb_camera_generic name="front_camera" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
-    <origin xyz="0.075 0 0.07" rpy="0 0 0" />
+    <origin xyz="0.075 0 0.07" rpy="0.0 0.13 0" />
   </xacro:rgb_camera_generic>
 
   <xacro:imu_generic name="imu_sensor" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
