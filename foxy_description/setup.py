@@ -16,6 +16,7 @@ setup(
         ('share/' + package_name + '/sensors', glob.glob('sensors/*')),
         ('share/' + package_name + '/worlds', glob.glob('worlds/*')),
         ('share/' + package_name + '/assets/duck', glob.glob('assets/duck/*')),
+        ('share/' + package_name + '/assets/small_loop', glob.glob('assets/small_loop/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

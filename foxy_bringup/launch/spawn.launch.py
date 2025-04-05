@@ -214,8 +214,8 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         robot_state_publisher_node,
         controllers,
         gz,
-        robot_localization_node,
-        slam_toolbox,
+        # robot_localization_node,
+        # slam_toolbox,
         rviz2
     ]
 

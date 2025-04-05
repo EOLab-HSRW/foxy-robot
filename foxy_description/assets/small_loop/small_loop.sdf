@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="small_loop">
+    <static>false</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://foxy_description/assets/small_loop/small_loop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>2.4 1.8 0.018</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
