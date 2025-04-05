@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="straight_lane">
+    <static>false</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://foxy_description/assets/straight_lane/straight_lane.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.6 6 0.018</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
+

@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="small_map">
+    <static>false</static>
+    <link name="link">
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://foxy_description/assets/small_map/small_map.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>4.2 3 0.018</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
+
