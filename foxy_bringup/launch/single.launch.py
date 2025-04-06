@@ -1,11 +1,11 @@
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, LaunchConfigurationEquals
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch import LaunchDescription, LaunchDescriptionEntity
-from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, OpaqueFunction, SetLaunchConfiguration
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription, LogInfo, OpaqueFunction, SetLaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
 
-def launch_args() -> list[LaunchDescriptionEntity]:
+def launch_args(context) -> list[LaunchDescriptionEntity]:
 
     declared_args = []
 
@@ -82,10 +82,12 @@ def launch_args() -> list[LaunchDescriptionEntity]:
 
 def launch_setup(context) -> list[LaunchDescriptionEntity]:
 
-    SetLaunchConfiguration(
-        name="use_sim_time",
-        value=("true" if LaunchConfiguration("system").perform(context) != 'robot' else "false")
+    info_msg = LogInfo(
+        msg="Sorry. The real robot is not yet implemented, but it will be soon.",
+        condition=LaunchConfigurationEquals("system", "robot")
     )
+
+    use_sim_time = "true" if LaunchConfiguration("system").perform(context) != 'robot' else "false"
 
     spawn_robot = IncludeLaunchDescription(
         PathJoinSubstitution(
@@ -102,15 +104,17 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
             "pos_z": LaunchConfiguration("pos_z"),
             "system": LaunchConfiguration("system"),
             "world": PathJoinSubstitution([FindPackageShare("foxy_description"), "worlds", f"{LaunchConfiguration('world').perform(context)}.sdf"]),
-            "use_sim_time": LaunchConfiguration("use_sim_time"),
+            "use_sim_time": use_sim_time,
             "robot_localization": LaunchConfiguration("robot_localization"),
             "slam_toolbox": LaunchConfiguration("slam_toolbox"),
             "rviz_start": LaunchConfiguration("rviz_start")
         }.items(),
+        condition=LaunchConfigurationEquals("system", "gz")
     )
 
 
     return [
+        info_msg,
         spawn_robot,
     ]
 
@@ -118,7 +122,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
 def generate_launch_description() -> LaunchDescription:
 
     ld = LaunchDescription()
-    ld.add_action(GroupAction(launch_args()))
+    ld.add_action(OpaqueFunction(function=launch_args))
     ld.add_action(OpaqueFunction(function=launch_setup))
 
     return ld
