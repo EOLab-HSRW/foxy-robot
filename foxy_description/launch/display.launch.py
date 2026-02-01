@@ -36,8 +36,7 @@ def launch_setup(context):
         package="rviz2",
         executable="rviz2",
         name="rviz2",
-        output="log",
-        parameters=[robot_description],  # Asegura que RViz reciba la descripción del robot
+        output="both",
     )
 
     return [

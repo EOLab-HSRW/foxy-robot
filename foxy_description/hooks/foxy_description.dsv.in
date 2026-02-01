@@ -1,0 +1,5 @@
+# Gazebo Sim (gz sim)
+prepend-non-duplicate;GZ_SIM_RESOURCE_PATH;share
+
+# Ignition Gazebo (older naming) Default in Humble
+prepend-non-duplicate;IGN_GAZEBO_RESOURCE_PATH;share

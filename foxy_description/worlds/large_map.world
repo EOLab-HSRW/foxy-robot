@@ -70,7 +70,7 @@
     <include>
       <name>large_map</name>
       <uri>
-        package://foxy_description/assets/large_map/large_map.sdf
+        package://foxy_description/assets/large_map
       </uri>
       <pose>0 0 0 0 0 0</pose>
     </include>
