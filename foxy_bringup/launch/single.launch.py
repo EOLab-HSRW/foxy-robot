@@ -12,7 +12,7 @@ def launch_args(context) -> list[LaunchDescriptionEntity]:
     declared_args.append(DeclareLaunchArgument(
         "robot_name",
         default_value="foxy",
-        description="Robot name. Robot name, this name is used as namespace."
+        description="Robot name. This name is used as namespace."
     ))
 
     declared_args.append(DeclareLaunchArgument(
