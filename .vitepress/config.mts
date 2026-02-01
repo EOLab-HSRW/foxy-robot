@@ -21,6 +21,12 @@ export default defineConfig({
         ]
       },
       {
+        text: 'Exercises',
+        items: [
+          { text: 'Braitenberg', link: '/docs/exercises/braitenberg' },
+        ]
+      },
+      {
         text: 'For Developers',
         items: [
           { text: 'Developer guide', link: '/docs/developers/guide' },
