@@ -19,6 +19,10 @@ Comments in possible scenarios:
 
 ## Recommended
 
+```
+vcs import < .repos
+```
+
 1. Install our container management system:
 
 > [!CAUTION]

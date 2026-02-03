@@ -83,6 +83,7 @@
       <parent link="${root_frame}" />
       <child link="base_footprint" />
       <origin xyz="0 0 ${-(wheel_radius+wheel_zoff)}" rpy="0 0 0" />
+      <dynamics friction="1.0"/>
     </joint>
 
     <xacro:wheel prefix="left_wheel" parent="${root_frame}" x_reflect="1" y_reflect="1" />
