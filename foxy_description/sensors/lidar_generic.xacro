@@ -13,7 +13,7 @@
       <child link="${name}_link"/>
       <xacro:insert_block name="origin" />
     </joint>
-    <xacro:if value="${system == 'gz'}">
+    <xacro:if value="${system == 'sim'}">
       <gazebo reference="${name}_link">
         <sensor name="${name}_link" type='gpu_lidar'>"
           <pose relative_to='${name}_link'>0 0 0 0 0 0</pose>

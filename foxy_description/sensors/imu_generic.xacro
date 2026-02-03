@@ -13,7 +13,7 @@
       <child link="${name}_link"/>
       <xacro:insert_block name="origin" />
     </joint>
-    <xacro:if value="${system == 'gz'}">
+    <xacro:if value="${system == 'sim'}">
       <gazebo>
         <plugin filename="gz-sim-imu-system"
           name="gz::sim::systems::Imu">

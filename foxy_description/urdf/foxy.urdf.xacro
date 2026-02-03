@@ -9,7 +9,9 @@
   <xacro:property name="namespace" default="$(arg robot_name)"/>
   <!-- <xacro:property name="root_frame" default="${namespace}/base_link" /> -->
   <xacro:property name="root_frame" default="base_link" />
-  <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'galatic', 'foxy']}"/>
+  <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'jazzy', 'kilted']}"/>
+  <!-- HARLEY DEBUG: removing humble in my setup -->
+  <!-- <xacro:property name="ros2_gz_before_renamed" value="${['galatic', 'foxy']}"/> -->
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
   <xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
@@ -30,11 +32,11 @@
     <origin xyz="0 0 0.12" rpy="0 0 0" />
   </xacro:lidar_generic>
 
-  <xacro:if value="${xacro.arg('system') == 'gz' and xacro.arg('distro') in ros2_gz_before_renamed}">
+  <xacro:if value="${xacro.arg('system') == 'sim' and xacro.arg('distro') in ros2_gz_before_renamed}">
     <!-- the plugin was renamed to gz_ros2_control from Iron -->
     <ros2_control name="GazeboSimSystem" type="system">
       <hardware>
-        <plugin>ign_ros2_control/IgnitionSystem</plugin>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
       </hardware>
       <joint name="left_wheel_joint">
         <command_interface name="velocity">
@@ -56,10 +58,9 @@
 
     <gazebo>
       <!-- inserted at the top level of the <model> tag -->
-      <plugin filename="ignition-gazebo-sensors-system" name="ignition::gazebo::systems::Sensors">
-        <render_engine>ogre</render_engine>
+      <plugin filename="gz-sim-sensors-system" name="gz::sim::systems::Sensors">
       </plugin>
-      <plugin filename="ign_ros2_control-system" name="ign_ros2_control::IgnitionROS2ControlPlugin">
+      <plugin filename="gz_ros2_control-system" name="gz_ros2_control::GazeboSimROS2ControlPlugin">
         <ros>
           <namespace>${namespace}</namespace>
         </ros>

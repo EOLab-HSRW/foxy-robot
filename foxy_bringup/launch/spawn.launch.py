@@ -7,78 +7,22 @@ from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDesc
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node, PushRosNamespace, SetParameter
 
-def launch_args(context) -> list[LaunchDescriptionEntity]:
-
-    declared_args = []
-
-    declared_args.append(DeclareLaunchArgument(
-        "robot_name",
-        description="Robot name."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "pos_x",
-        description="Robot spawn x position (only for simulation environments)."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "pos_y",
-        description="Robot spawn y position (only for simulation environments)."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "pos_z",
-        description="Robot spawn z position (only for simulation environments)."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "system",
-        description="Choose system to start, e.g. robot or gz for Gazebo",
-        choices=['gz', 'robot']
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "world",
-        default_value="empty.sdf",
-        description="World in simulation (only `gz` sim supported for now)."
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "robot_localization",
-        default_value="true",
-        description="Start robot localization package for sensor fusion"
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "slam_toolbox",
-        default_value="true",
-        description="Start slam_toolbox"
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "use_sim_time",
-        default_value = "true",
-        description="Use simulation time /clock topic published by gazebo"
-    ))
-
-    declared_args.append(DeclareLaunchArgument(
-        "start_rviz",
-        default_value="true",
-        description="Launch rviz2"
-    ))
-
-    return declared_args
-
 
 def launch_setup(context) -> list[LaunchDescriptionEntity]:
 
-    # use_sim_time = True if LaunchConfiguration("system").perform(context) != 'robot' else False 
+    robot_desc_path = PathJoinSubstitution([FindPackageShare("foxy_description"), "urdf", "foxy.urdf.xacro"]).perform(context)
+    robot_name = LaunchConfiguration("robot_name").perform(context)
+    system = LaunchConfiguration("system").perform(context)
+    world_path = LaunchConfiguration("world").perform(context)
+    use_sim_time = True if system == "sim" else False
+
+    gz_gui_config_path = PathJoinSubstitution([FindPackageShare("foxy_description"), "gz-config", "client-gui.config"]).perform(context)
 
     robot_desc_content = xacro.process_file(
-        PathJoinSubstitution([FindPackageShare("foxy_description"), "urdf", "foxy.urdf.xacro"]).perform(context),
+        robot_desc_path,
         mappings={
-            "robot_name": LaunchConfiguration("robot_name").perform(context),
-            "system": LaunchConfiguration("system").perform(context),
+            "robot_name": robot_name,
+            "system": system,
             "distro": os.getenv("ROS_DISTRO")
         }
     ).toxml()
@@ -90,7 +34,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
         output="both",
         parameters=[
             {"robot_description": robot_desc_content},
-            {"use_sim_time": LaunchConfiguration("use_sim_time")}
+            {"use_sim_time": use_sim_time }
             # {"frame_prefix": f'{LaunchConfiguration("robot_name").perform(context)}/'},
         ]
     )
@@ -103,7 +47,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 arguments=["joint_state_broadcaster", "diff_drive_base_controller"],
                 output='screen',
                 parameters=[
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")}
+                    {"use_sim_time": use_sim_time}
                 ]
             ),
         ]
@@ -118,7 +62,8 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                     "gz_sim.launch.py"
                 ]),
                 launch_arguments={
-                    "gz_args": ["-r ", LaunchConfiguration("world")], # `-r` start running simulation immediately
+                    # "gz_args": ["-r ", LaunchConfiguration("world"), " --gui-config ", gz_gui_config_path], # `-r` start running simulation immediately
+                    "gz_args": [world_path, " --gui-config ", gz_gui_config_path], # `-r` start running simulation immediately
                     'on_exit_shutdown': 'True',
                 }.items()
             ),
@@ -127,13 +72,13 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 executable="create",
                 arguments=[
                     "-name", LaunchConfiguration("robot_name"),
-                    "-topic", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description",
+                    "-topic", f"/{robot_name}/robot_description",
                     "-x", LaunchConfiguration("pos_x"),
                     "-y", LaunchConfiguration("pos_y"),
                     "-z", LaunchConfiguration("pos_z")
                 ],
                 parameters=[
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")}
+                    {"use_sim_time": use_sim_time}
                 ],
                 output='screen'
             ),
@@ -141,14 +86,14 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 package='ros_gz_bridge',
                 executable='parameter_bridge',
                 arguments=[
-                    '/clock@rosgraph_msgs/msg/Clock[ignition.msgs.Clock',
-                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/image@sensor_msgs/msg/Image[ignition.msgs.Image',
-                    f'/{LaunchConfiguration("robot_name").perform(context)}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[ignition.msgs.CameraInfo',
-                    f'/{LaunchConfiguration("robot_name").perform(context)}/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
-                    f'/{LaunchConfiguration("robot_name").perform(context)}/lidar_sensor/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
+                    '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
+                    f'/{robot_name}/front_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+                    f'/{robot_name}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+                    f'/{robot_name}/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
+                    f'/{robot_name}/lidar_sensor/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
                 ],
                 parameters=[
-                    {"use_sim_time": LaunchConfiguration("use_sim_time")}
+                    {"use_sim_time": use_sim_time}
                 ],
                 # remappings=[
                 #     (f'/{LaunchConfiguration("robot_name").perform(context)}/lidar_sensor/lidar', '/laser_scan')
@@ -160,7 +105,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 output='screen'
             )
         ],
-        condition=LaunchConfigurationEquals("system", "gz")
+        condition=LaunchConfigurationEquals("system", "sim")
     )
 
     robot_localization_node = Node(
@@ -174,7 +119,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 "config",
                 "localization.yaml"
             ]),
-            {"use_sim_time": LaunchConfiguration("use_sim_time")}
+            {"use_sim_time": use_sim_time}
         ],
         condition=IfCondition(LaunchConfiguration("robot_localization"))
     )
@@ -193,7 +138,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
                 "config",
                 "slam_toolbox.yaml"
             ]),
-            "use_sim_time": LaunchConfiguration("use_sim_time"),
+            "use_sim_time": use_sim_time
         }.items(),
         condition=IfCondition(LaunchConfiguration("slam_toolbox"))
     )
@@ -223,7 +168,63 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
 def generate_launch_description() -> LaunchDescription:
 
     ld = LaunchDescription()
-    ld.add_action(OpaqueFunction(function=launch_args))
+
+    ld.add_action(DeclareLaunchArgument(
+        "robot_name",
+        description="Robot name."
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "pos_x",
+        description="Robot spawn x position (only for simulation environments)."
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "pos_y",
+        description="Robot spawn y position (only for simulation environments)."
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "pos_z",
+        description="Robot spawn z position (only for simulation environments)."
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "system",
+        description="Choose system to start, e.g. robot or gz for Gazebo",
+        choices=['sim', 'real']
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "world",
+        default_value="empty.sdf",
+        description="World in simulation (only `gz` sim supported for now)."
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "robot_localization",
+        default_value="true",
+        description="Start robot localization package for sensor fusion"
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "slam_toolbox",
+        default_value="true",
+        description="Start slam_toolbox"
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "use_sim_time",
+        default_value = "true",
+        description="Use simulation time /clock topic published by gazebo"
+    ))
+
+    ld.add_action(DeclareLaunchArgument(
+        "start_rviz",
+        default_value="true",
+        description="Launch rviz2"
+    ))
+
     ld.add_action(OpaqueFunction(function=launch_setup))
 
     return ld
