@@ -10,7 +10,7 @@ def launch_setup(context) -> list[LaunchDescriptionEntity]:
 
     info_msg = LogInfo(
         msg="Sorry. The real robot is not yet implemented, but it will be soon.",
-        condition=LaunchConfigurationEquals("system", "robot")
+        condition=LaunchConfigurationEquals("system", "real")
     )
 
     system = LaunchConfiguration("system").perform(context)
