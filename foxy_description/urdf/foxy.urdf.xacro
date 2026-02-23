@@ -69,4 +69,43 @@
     </gazebo>
   </xacro:if>
 
+  <xacro:if value="${xacro.arg('system') == 'hw'}">
+    <ros2_control name="FoxyMotorsHardware" type="system">
+    <hardware>
+      <plugin>foxy_hardware_interface/FoxyMotorsHardware</plugin>
+
+      <param name="gpiochip_dev">/dev/gpiochip0</param>
+
+      <param name="left_enc_a">232</param>
+      <param name="left_enc_b">79</param>
+      <param name="right_enc_a">76</param>
+      <param name="right_enc_b">51</param>
+
+      <param name="ticks_per_rev">135</param>
+      <param name="debounce_us">0</param>
+
+      <param name="invert_left_enc">false</param>
+      <param name="invert_right_enc">false</param>
+
+      <param name="max_wheel_rad_s">24.0</param> <!-- required calibration -->
+      <param name="invert_left_motor">false</param>
+      <param name="invert_right_motor">false</param> <!-- required calibration -->
+      <param name="dead_zone">0.22</param>
+    </hardware>
+
+    <joint name="left_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <joint name="right_wheel_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+  </xacro:if>
+
+
 </robot>

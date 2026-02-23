@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<library path="foxy_hardware_interface">
+  <class
+      name="foxy_hardware_interface/FoxyMotorsHardware"
+      type="foxy_hardware_interface::FoxyMotorsHardware"
+      base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Diff drive hardware interface using motor_init(id) and motor_set(handle, [-1..1]).
+    </description>
+  </class>
+</library>

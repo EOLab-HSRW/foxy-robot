@@ -3,7 +3,8 @@ from launch.actions import (
     DeclareLaunchArgument,
     OpaqueFunction,
     IncludeLaunchDescription,
-    LogInfo
+    LogInfo,
+    RegisterEventHandler,
 )
 from launch.substitutions import (
     Command,
@@ -11,6 +12,7 @@ from launch.substitutions import (
     LaunchConfiguration,
     PathJoinSubstitution,
 )
+from launch.event_handlers import OnProcessStart
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
@@ -45,9 +47,9 @@ def launch_setup(context) -> list[object]:
         PathJoinSubstitution([FindExecutable(name="xacro")]),
         " ",
         robot_desc_path,
-        # " ",
-        # "system:=", mode,
-    ])
+        " ",
+        "system:=", mode,
+    ]).perform(context)
 
     robot_state_publisher = Node(
         package="robot_state_publisher",
@@ -60,12 +62,50 @@ def launch_setup(context) -> list[object]:
         ]
     )
 
+    controllers_path = PathJoinSubstitution([
+        FindPackageShare("foxy_bringup"),
+        "config",
+        "controllers.yaml"
+    ])
+
+    ros2_control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[
+            controllers_path,
+        ],
+        remappings=[
+            ("~/robot_description", "/robot_description"),
+        ],
+        output="screen",
+    )
+
+    spawn_joint_state_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["joint_state_broadcaster", "diff_drive_base_controller"],
+        output="screen",
+    )
+
+    on_start_cm = RegisterEventHandler(
+        OnProcessStart(
+            target_action=ros2_control_node,
+            on_start=[spawn_joint_state_broadcaster],
+        )
+    )
+
 
     include_bringup = IncludeLaunchDescription(
         bringup
     )
 
-    return [include_bringup]
+    return [
+        robot_state_publisher,
+        include_bringup,
+        # spawn_joint_state_broadcaster
+        ros2_control_node,
+        on_start_cm,
+    ]
 
 
 def generate_launch_description() -> LaunchDescription:
