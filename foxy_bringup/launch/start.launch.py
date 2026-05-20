@@ -6,8 +6,10 @@ from launch.actions import (
     LogInfo,
     RegisterEventHandler,
 )
+from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import (
     Command,
+    EnvironmentVariable,
     FindExecutable,
     LaunchConfiguration,
     PathJoinSubstitution,
@@ -17,14 +19,21 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import Node
+from launch_ros.actions import Node, PushRosNamespace
 
 from ament_index_python.packages import PackageNotFoundError
 
 
 def launch_setup(context) -> list[object]:
     mode: str = LaunchConfiguration("mode").perform(context)
-    use_sim_time: bool = True if mode == "sim" else False
+
+    # for ROS-reasons the launch system uses string for all
+    # launch arguments.
+    is_sim: str = "true" if mode == "sim" else "false"
+
+    # but, ROS nodes they typed the node parameters, so:
+    use_sim_time: bool = True if is_sim == "true" else False
+
 
     pkg: str = "foxy_bringup_sim" if mode == "sim" else "foxy_bringup_hw"
 
@@ -36,6 +45,22 @@ def launch_setup(context) -> list[object]:
         ]
 
     bringup: str = PathJoinSubstitution([FindPackageShare(pkg), "launch", "bringup.launch.py"])
+
+    include_bringup_sim = IncludeLaunchDescription(
+        bringup,
+        launch_arguments={
+            "robot_name": LaunchConfiguration("robot_name"),
+            "pos_x": LaunchConfiguration("pos_x"),
+            "pos_y": LaunchConfiguration("pos_y"),
+            "pos_z": LaunchConfiguration("pos_z"),
+            "world": LaunchConfiguration("world"),
+        }.items(),
+        condition=IfCondition(is_sim)
+    )
+    include_bringup_hw = IncludeLaunchDescription(
+        bringup,
+        condition=UnlessCondition(is_sim)
+    )
 
     robot_desc_path: str = PathJoinSubstitution([
         FindPackageShare("foxy_description"),
@@ -49,6 +74,10 @@ def launch_setup(context) -> list[object]:
         robot_desc_path,
         " ",
         "system:=", mode,
+        " ",
+        "robot_name:=", LaunchConfiguration("robot_name").perform(context),
+        " ",
+        "distro:=", EnvironmentVariable("ROS_DISTRO")
     ]).perform(context)
 
     robot_state_publisher = Node(
@@ -75,12 +104,12 @@ def launch_setup(context) -> list[object]:
             controllers_path,
         ],
         remappings=[
-            ("~/robot_description", "/robot_description"),
+            ("~/robot_description", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description"),
         ],
         output="screen",
     )
 
-    spawn_joint_state_broadcaster = Node(
+    cm_spawner_node = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "diff_drive_base_controller"],
@@ -90,19 +119,16 @@ def launch_setup(context) -> list[object]:
     on_start_cm = RegisterEventHandler(
         OnProcessStart(
             target_action=ros2_control_node,
-            on_start=[spawn_joint_state_broadcaster],
+            on_start=[cm_spawner_node],
         )
     )
 
 
-    include_bringup = IncludeLaunchDescription(
-        bringup
-    )
-
     return [
+        PushRosNamespace(LaunchConfiguration("robot_name")),
+        include_bringup_sim,
+        include_bringup_hw,
         robot_state_publisher,
-        include_bringup,
-        # spawn_joint_state_broadcaster
         ros2_control_node,
         on_start_cm,
     ]
@@ -117,6 +143,43 @@ def generate_launch_description() -> LaunchDescription:
         default_value="sim",
         choices=["hw", "sim"],
         description="Select hardware or simulation bringup",
+    ))
+
+    launch_args.append(DeclareLaunchArgument(
+        "robot_name",
+        default_value="foxy",
+        description="Robot name. This name is used as namespace."
+    ))
+
+    launch_args.append(DeclareLaunchArgument(
+        "pos_x",
+        default_value="0.0",
+        description="Start position in x axis (only use in mode:=sim)."
+    ))
+
+    launch_args.append(DeclareLaunchArgument(
+        "pos_y",
+        default_value="0.0",
+        description="Start position in y axis (only use in mode:=sim)."
+    ))
+
+    launch_args.append(DeclareLaunchArgument(
+        "pos_z",
+        default_value="0.2",
+        description="Start position in z axis (only use in mode:=sim)."
+    ))
+
+    launch_args.append(DeclareLaunchArgument(
+        "world",
+        default_value="small_loop",
+        choices=[
+            "empty",
+            "small_loop",
+            "small_map",
+            "large_map",
+            "straight_lane"
+        ],
+        description="Start simulated world (only use in mode:=sim)."
     ))
 
     ld = LaunchDescription(launch_args)
