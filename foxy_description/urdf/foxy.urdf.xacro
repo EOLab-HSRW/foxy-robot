@@ -105,6 +105,46 @@
       <state_interface name="velocity"/>
     </joint>
   </ros2_control>
+
+  <ros2_control name="BatteryClient" type="system">
+    <hardware>
+      <plugin>foxy_hardware_interface/BatteryClientInterface</plugin>
+      <param name="status_path">/run/batteryd/status</param>
+      <param name="socket_path">/run/batteryd/control.sock</param>
+      <param name="timeout_ms">1000</param>
+      <param name="read_via_socket">false</param>
+      <param name="fail_on_read_error">true</param>
+      <param name="ping_on_activate">true</param>
+    </hardware>
+
+    <gpio name="battery">
+      <state_interface name="online"/>
+      <state_interface name="stale"/>
+      <state_interface name="percent"/>
+      <state_interface name="voltage_mv"/>
+      <state_interface name="current_ma"/>
+      <state_interface name="temperature_mc"/>
+      <state_interface name="time_to_empty_min"/>
+      <state_interface name="cycle_count"/>
+      <state_interface name="usb_out_1_mv"/>
+      <state_interface name="usb_out_2_mv"/>
+      <state_interface name="charger_voltage_mv"/>
+      <state_interface name="age_ms"/>
+      <state_interface name="packet_count"/>
+      <state_interface name="last_read_result"/>
+      <state_interface name="last_command_result"/>
+      <state_interface name="last_command_ok"/>
+      <state_interface name="protocol_version"/>
+
+      <!-- One-shot commands: write 0 -> 1 to trigger. -->
+      <command_interface name="ping"/>
+      <command_interface name="get"/>
+      <command_interface name="version"/>
+      <command_interface name="shutdown"/>
+    </gpio>
+  </ros2_control>
+
+
   </xacro:if>
 
 
