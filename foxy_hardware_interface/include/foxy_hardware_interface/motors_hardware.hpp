@@ -10,7 +10,7 @@
 #include "foxy_hardware_interface/quadrature_encoder.hpp"
 
 #define FOXY_IMPLEMENTATION
-#include "foxy_hardware_interface/foxy.h"
+#include "foxy/foxy.h"
 
 namespace foxy_hardware_interface
 {

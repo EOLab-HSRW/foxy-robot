@@ -14,6 +14,7 @@
   <depend>rclcpp</depend>
   <depend>hardware_interface</depend>
   <depend>pluginlib</depend>
+  <build_depend>foxy_drivers</build_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
