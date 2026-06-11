@@ -630,6 +630,41 @@ typedef struct {
     endpoint_u_t u;
 } peripheral_primary_t;
 
+#ifdef __cplusplus
+
+#define PRI_I2C(_adapter, _addr) \
+    peripheral_primary_t{ .iface=IFACE_I2C, .u={.i2c = {.adapter=(_adapter), .addr=(_addr) } } }
+
+#define PRI_GPIO(_chip, _offset, _active_low) \
+    peripheral_primary_t{ .iface=IFACE_GPIO, .u={.gpio = {.line={.chip = (_chip), .offset = (_offset), .active_low = (_active_low) } } } }
+
+#define PRI_SPI(_dev, _hz, _mode) \
+    peripheral_primary_t{ \
+        .iface = IFACE_SPI, \
+        .u = { .spi = { .dev = (_dev), .hz = (_hz), .mode = (_mode) } } \
+    }
+
+#define PRI_UART(_dev, _baud) \
+    peripheral_primary_t{ \
+        .iface = IFACE_UART, \
+        .u = { .uart = { .dev = (_dev), .baud = (_baud) } } \
+    }
+
+#define PRI_V4L2(_dev) \
+    peripheral_primary_t{ \
+        .iface = IFACE_V4L2, \
+        .u = { .v4l2 = { .dev = (_dev) } } \
+    }
+
+#define PRI_CSI(_port, _lanes) \
+    peripheral_primary_t{ \
+        .iface = IFACE_CSI, \
+        .u = { .csi = { .port = (_port), .lanes = (_lanes) } } \
+    }
+
+
+#else
+
 #define PRI_I2C(_adapter, _addr) \
     (peripheral_primary_t){ .iface=IFACE_I2C, .u.i2c={ .adapter=(_adapter), .addr=(_addr) } }
 
@@ -647,6 +682,9 @@ typedef struct {
 
 #define PRI_CSI(_port, _lanes) \
     (peripheral_primary_t){ .iface=IFACE_CSI, .u.csi={ .port=(_port), .lanes=(_lanes) } }
+
+#endif
+
 
 #define PERIPH_MAX_AUX 3
 
@@ -867,9 +905,9 @@ static const peripheral_desc_t jetson_nano_hat_v3_15[] = {
         .num_aux = 2,
         .aux = {
             { .role=ENDPOINT_ROLE_AUX0, .iface=IFACE_GPIO,
-              .u.gpio={ .line={ .chip="/dev/gpiochip0", .offset=38, .active_low=false } } }, // physical pin 33
+              .u={.gpio = { .line = { .chip="/dev/gpiochip0", .offset=38, .active_low=false } } } }, // physical pin 33
             { .role=ENDPOINT_ROLE_AUX1, .iface=IFACE_GPIO,
-              .u.gpio={ .line={ .chip="/dev/gpiochip0", .offset=200, .active_low=false } } }, // physical pin 31
+              .u = { .gpio = { .line = { .chip="/dev/gpiochip0", .offset=200, .active_low=false } } } }, // physical pin 31
         },
         .props = motor2_props,
         .num_props = (uint16_t)(sizeof(motor2_props)/sizeof(motor2_props[0])),
