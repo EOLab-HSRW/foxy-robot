@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "foxy_hardware_interface/batteryd.h"
+#include "foxy/batteryd.h"
 
 namespace foxy_hardware_interface
 {
