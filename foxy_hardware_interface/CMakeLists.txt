@@ -12,6 +12,7 @@ find_package(pluginlib REQUIRED)
 
 add_library(foxy_hardware_interface SHARED
     src/motors_hardware.cpp
+    src/battery_client.cpp
 )
 
 target_include_directories(foxy_hardware_interface PUBLIC
