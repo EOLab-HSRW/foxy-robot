@@ -405,7 +405,7 @@ int BatteryClientInterface::control_command_ok(const char * command)
   if (rc != FOXY_BATTERY_OK) {
     return rc;
   }
-  return reply_is_ok(response) ? FOXY_BATTERY_OK : foxy_battery_EPROTO;
+  return reply_is_ok(response) ? FOXY_BATTERY_OK : FOXY_BATTERY_EPROTO;
 }
 
 int BatteryClientInterface::control_version()
