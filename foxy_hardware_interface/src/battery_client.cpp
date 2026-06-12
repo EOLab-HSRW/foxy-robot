@@ -11,7 +11,7 @@
 #include "foxy_hardware_interface/battery_client.hpp"
 
 #define BATTERYD_IMPLEMENTATION
-#include "foxy/batteryd.h"
+#include "foxy/battery.h"
 
 namespace foxy_hardware_interface {
 
