@@ -112,7 +112,11 @@ def launch_setup(context) -> list[object]:
     cm_spawner_node = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["joint_state_broadcaster", "diff_drive_base_controller"],
+        arguments=[
+            "joint_state_broadcaster",
+            "diff_drive_base_controller",
+            "battery_state_broadcaster",
+        ],
         output="screen",
     )
 

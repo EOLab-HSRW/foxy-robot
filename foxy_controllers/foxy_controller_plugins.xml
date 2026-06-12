@@ -1,0 +1,10 @@
+<library path="foxy_controllers">
+  <class
+    name="foxy_controllers/BatteryStateBroadcaster"
+    type="foxy_controllers::BatteryStateBroadcaster"
+    base_class_type="controller_interface::ControllerInterface">
+    <description>
+      ros2_control controller that publishes sensor_msgs/msg/BatteryState from BatterydHardwareInterface state interfaces and exposes Trigger services for daemon commands.
+    </description>
+  </class>
+</library>
