@@ -186,7 +186,7 @@ hardware_interface::CallbackReturn BatteryClientInterface::on_activate(
     if (rc != FOXY_BATTERY_OK) {
       RCLCPP_ERROR(
         rclcpp::get_logger("BatteryClientInterface"),
-        "foxy_battery PING failed during activation: %s", batteryd_strerror(rc));
+        "foxy_battery PING failed during activation: %s", foxy_battery_strerror(rc));
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
@@ -197,7 +197,7 @@ hardware_interface::CallbackReturn BatteryClientInterface::on_activate(
   if (rc != FOXY_BATTERY_OK && fail_on_read_error_) {
     RCLCPP_ERROR(
       rclcpp::get_logger("BatteryClientInterface"),
-      "Initial foxy_battery status read failed: %s", batteryd_strerror(rc));
+      "Initial foxy_battery status read failed: %s", foxy_battery_strerror(rc));
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -223,7 +223,7 @@ hardware_interface::return_type BatteryClientInterface::read(
       rclcpp::get_logger("BatteryClientInterface"),
       *rclcpp::Clock::make_shared(),
       2000,
-      "foxy_battery status read failed: %s", batteryd_strerror(rc));
+      "foxy_battery status read failed: %s", foxy_battery_strerror(rc));
 
     return fail_on_read_error_ ?
            hardware_interface::return_type::ERROR : hardware_interface::return_type::OK;
@@ -432,7 +432,7 @@ void BatteryClientInterface::record_command_result(int rc)
   if (rc != FOXY_BATTERY_OK) {
     RCLCPP_WARN(
       rclcpp::get_logger("foxy_batteryHardwareInterface"),
-      "foxy_battery command failed: %s", batteryd_strerror(rc));
+      "foxy_battery command failed: %s", foxy_battery_strerror(rc));
   }
 }
 
