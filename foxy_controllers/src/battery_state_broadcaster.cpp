@@ -298,31 +298,31 @@ void BatteryStateBroadcaster::queue_command(
     case CommandRequest::Ping:
       ping_requested_.store(true);
       response_msg->success = true;
-      response_msg->message = "queued batteryd PING command";
+      response_msg->message = "queued foxy-battery-monitor PING command";
       return;
 
     case CommandRequest::Refresh:
 
       refresh_requested_.store(true);
       response_msg->success = true;
-      response_msg->message = "queued batteryd GET refresh command";
+      response_msg->message = "queued foxy-battery-monitor GET refresh command";
       return;
 
     case CommandRequest::Version:
       version_requested_.store(true);
       response_msg->success = true;
-      response_msg->message = "queued batteryd VERSION command; read protocol_version state after update";
+      response_msg->message = "queued foxy-battery-monitor VERSION command; read protocol_version state after update";
       return;
 
     case CommandRequest::Shutdown:
       if (!allow_shutdown_) {
         response_msg->success = false;
-        response_msg->message = "batteryd SHUTDOWN service is disabled; set allow_shutdown=true to enable it";
+        response_msg->message = "foxy-battery-monitor SHUTDOWN service is disabled; set allow_shutdown=true to enable it";
         return;
       }
       shutdown_requested_.store(true);
       response_msg->success = true;
-      response_msg->message = "queued batteryd SHUTDOWN command";
+      response_msg->message = "queued foxy-battery-monitor SHUTDOWN command";
       return;
   }
 

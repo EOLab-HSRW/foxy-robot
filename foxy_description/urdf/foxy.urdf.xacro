@@ -109,8 +109,8 @@
   <ros2_control name="BatteryClient" type="system">
     <hardware>
       <plugin>foxy_hardware_interface/BatteryClientInterface</plugin>
-      <param name="status_path">/run/batteryd/status</param>
-      <param name="socket_path">/run/batteryd/control.sock</param>
+      <param name="status_path">/run/foxy-battery-monitor/status</param>
+      <param name="socket_path">/run/foxy-battery-monitor/control.sock</param>
       <param name="timeout_ms">1000</param>
       <param name="read_via_socket">false</param>
       <param name="fail_on_read_error">true</param>
