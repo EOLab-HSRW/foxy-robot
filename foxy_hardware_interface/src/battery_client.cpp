@@ -10,7 +10,7 @@
 
 #include "foxy_hardware_interface/battery_client.hpp"
 
-#define BATTERYD_IMPLEMENTATION
+#define FOXY_BATTERY_IMPLEMENTATION
 #include "foxy/battery.h"
 
 namespace foxy_hardware_interface {
@@ -103,9 +103,9 @@ hardware_interface::CallbackReturn BatteryClientInterface::on_init(
   }
 
   gpio_name_ = info_.gpios.front().name;
-  status_path_ = parse_string_param(info_.hardware_parameters, "status_path", BATTERYD_STATUS_PATH);
-  socket_path_ = parse_string_param(info_.hardware_parameters, "socket_path", BATTERYD_CONTROL_SOCKET_PATH);
-  timeout_ms_ = parse_int_param(info_.hardware_parameters, "timeout_ms", BATTERYD_DEFAULT_TIMEOUT_MS);
+  status_path_ = parse_string_param(info_.hardware_parameters, "status_path", FOXY_BATTERY_STATUS_PATH);
+  socket_path_ = parse_string_param(info_.hardware_parameters, "socket_path", FOXY_BATTERY_CONTROL_SOCKET_PATH);
+  timeout_ms_ = parse_int_param(info_.hardware_parameters, "timeout_ms", FOXY_BATTERY_DEFAULT_TIMEOUT_MS);
   read_via_socket_ = parse_bool_param(info_.hardware_parameters, "read_via_socket", false);
   fail_on_read_error_ = parse_bool_param(info_.hardware_parameters, "fail_on_read_error", false);
   ping_on_activate_ = parse_bool_param(info_.hardware_parameters, "ping_on_activate", false);
@@ -180,13 +180,13 @@ hardware_interface::CallbackReturn BatteryClientInterface::on_activate(
     const int rc = control_command_ok("PING");
     RCLCPP_INFO(
         rclcpp::get_logger("BatteryClientInterface"),
-        "batteryd PING result is: %d", rc);
+        "foxy_battery PING result is: %d", rc);
 
     record_command_result(rc);
-    if (rc != BATTERYD_OK) {
+    if (rc != FOXY_BATTERY_OK) {
       RCLCPP_ERROR(
         rclcpp::get_logger("BatteryClientInterface"),
-        "batteryd PING failed during activation: %s", batteryd_strerror(rc));
+        "foxy_battery PING failed during activation: %s", batteryd_strerror(rc));
       return hardware_interface::CallbackReturn::ERROR;
     }
   }
@@ -194,10 +194,10 @@ hardware_interface::CallbackReturn BatteryClientInterface::on_activate(
   const int rc = read_via_socket_ ? read_status_socket() : read_status_file();
   last_read_result_ = static_cast<double>(rc);
 
-  if (rc != BATTERYD_OK && fail_on_read_error_) {
+  if (rc != FOXY_BATTERY_OK && fail_on_read_error_) {
     RCLCPP_ERROR(
       rclcpp::get_logger("BatteryClientInterface"),
-      "Initial batteryd status read failed: %s", batteryd_strerror(rc));
+      "Initial foxy_battery status read failed: %s", batteryd_strerror(rc));
     return hardware_interface::CallbackReturn::ERROR;
   }
 
@@ -218,12 +218,12 @@ hardware_interface::return_type BatteryClientInterface::read(
   const int rc = read_via_socket_ ? read_status_socket() : read_status_file();
   last_read_result_ = static_cast<double>(rc);
 
-  if (rc != BATTERYD_OK) {
+  if (rc != FOXY_BATTERY_OK) {
     RCLCPP_WARN_THROTTLE(
       rclcpp::get_logger("BatteryClientInterface"),
       *rclcpp::Clock::make_shared(),
       2000,
-      "batteryd status read failed: %s", batteryd_strerror(rc));
+      "foxy_battery status read failed: %s", batteryd_strerror(rc));
 
     return fail_on_read_error_ ?
            hardware_interface::return_type::ERROR : hardware_interface::return_type::OK;
@@ -348,7 +348,7 @@ void BatteryClientInterface::reset_commands()
   previous_shutdown_command_ = 0.0;
 }
 
-void BatteryClientInterface::apply_status(const batteryd_status & status)
+void BatteryClientInterface::apply_status(const foxy_battery_status & status)
 {
   online_ = static_cast<double>(status.online);
   stale_ = static_cast<double>(status.stale);
@@ -367,9 +367,9 @@ void BatteryClientInterface::apply_status(const batteryd_status & status)
 
 int BatteryClientInterface::read_status_file()
 {
-  batteryd_status status;
-  const int rc = batteryd_read_status_file(status_path_.c_str(), &status);
-  if (rc == BATTERYD_OK) {
+  foxy_battery_status status;
+  const int rc = foxy_battery_read_status_file(status_path_.c_str(), &status);
+  if (rc == FOXY_BATTERY_OK) {
     apply_status(status);
   }
   return rc;
@@ -377,21 +377,21 @@ int BatteryClientInterface::read_status_file()
 
 int BatteryClientInterface::read_status_socket()
 {
-  char response[BATTERYD_RESPONSE_MAX];
-  batteryd_status status;
+  char response[FOXY_BATTERY_RESPONSE_MAX];
+  foxy_battery_status status;
 
-  const int rc = batteryd_control_command_timeout(
+  const int rc = foxy_battery_control_command_timeout(
     socket_path_.c_str(), "GET", response, sizeof(response), timeout_ms_);
-  if (rc != BATTERYD_OK) {
+  if (rc != FOXY_BATTERY_OK) {
     return rc;
   }
 
   if (!reply_is_ok(response)) {
-    return BATTERYD_EPROTO;
+    return FOXY_BATTERY_EPROTO;
   }
 
-  const int parse_rc = batteryd_parse_status(response, &status);
-  if (parse_rc == BATTERYD_OK) {
+  const int parse_rc = foxy_battery_parse_status(response, &status);
+  if (parse_rc == FOXY_BATTERY_OK) {
     apply_status(status);
   }
   return parse_rc;
@@ -399,40 +399,40 @@ int BatteryClientInterface::read_status_socket()
 
 int BatteryClientInterface::control_command_ok(const char * command)
 {
-  char response[BATTERYD_RESPONSE_MAX];
-  const int rc = batteryd_control_command_timeout(
+  char response[FOXY_BATTERY_RESPONSE_MAX];
+  const int rc = foxy_battery_control_command_timeout(
     socket_path_.c_str(), command, response, sizeof(response), timeout_ms_);
-  if (rc != BATTERYD_OK) {
+  if (rc != FOXY_BATTERY_OK) {
     return rc;
   }
-  return reply_is_ok(response) ? BATTERYD_OK : BATTERYD_EPROTO;
+  return reply_is_ok(response) ? FOXY_BATTERY_OK : foxy_battery_EPROTO;
 }
 
 int BatteryClientInterface::control_version()
 {
-  char response[BATTERYD_RESPONSE_MAX];
-  const int rc = batteryd_control_command_timeout(
+  char response[FOXY_BATTERY_RESPONSE_MAX];
+  const int rc = foxy_battery_control_command_timeout(
     socket_path_.c_str(), "VERSION", response, sizeof(response), timeout_ms_);
-  if (rc != BATTERYD_OK) {
+  if (rc != FOXY_BATTERY_OK) {
     return rc;
   }
   if (!reply_is_ok(response)) {
-    return BATTERYD_EPROTO;
+    return FOXY_BATTERY_EPROTO;
   }
 
   protocol_version_ = static_cast<double>(parse_protocol_version(response));
-  return BATTERYD_OK;
+  return FOXY_BATTERY_OK;
 }
 
 void BatteryClientInterface::record_command_result(int rc)
 {
   last_command_result_ = static_cast<double>(rc);
-  last_command_ok_ = rc == BATTERYD_OK ? 1.0 : 0.0;
+  last_command_ok_ = rc == FOXY_BATTERY_OK ? 1.0 : 0.0;
 
-  if (rc != BATTERYD_OK) {
+  if (rc != FOXY_BATTERY_OK) {
     RCLCPP_WARN(
-      rclcpp::get_logger("BatterydHardwareInterface"),
-      "batteryd command failed: %s", batteryd_strerror(rc));
+      rclcpp::get_logger("foxy_batteryHardwareInterface"),
+      "foxy_battery command failed: %s", batteryd_strerror(rc));
   }
 }
 

@@ -38,7 +38,7 @@ private:
 
   void reset_states();
   void reset_commands();
-  void apply_status(const struct batteryd_status & status);
+  void apply_status(const struct foxy_battery_status & status);
 
   int read_status_file();
   int read_status_socket();
@@ -47,14 +47,14 @@ private:
   void record_command_result(int rc);
 
   std::string gpio_name_{"battery"};
-  std::string status_path_{"/run/batteryd/status"};
-  std::string socket_path_{"/run/batteryd/control.sock"};
+  std::string status_path_{"/run/foxy-battery-monitor/status"};
+  std::string socket_path_{"/run/foxy-battery-monitor/control.sock"};
   int timeout_ms_{1000};
   bool read_via_socket_{false};
   bool fail_on_read_error_{false};
   bool ping_on_activate_{false};
 
-  // State interfaces. Values mirror batteryd_status fields where possible.
+  // State interfaces. Values mirror foxy_battery_status fields where possible.
   double online_{0.0};
   double stale_{1.0};
   double percent_{-1.0};
