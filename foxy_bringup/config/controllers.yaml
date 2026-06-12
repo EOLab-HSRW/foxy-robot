@@ -2,11 +2,28 @@
   ros__parameters:
     update_rate: 100  # Hz
 
+    battery_state_broadcaster:
+      type: foxy_controllers/BatteryStateBroadcaster
+
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     diff_drive_base_controller:
       type: diff_drive_controller/DiffDriveController
+
+
+/**/battery_state_broadcaster:
+  ros__parameters:
+    battery_name: battery
+    frame_id: battery
+    topic_name: ~/battery_state
+    publish_rate: 1.0
+    charging_current_positive: true
+    current_deadband_ma: 50.0
+
+    # Safety gate: the ~/shutdown service exists, but returns failure unless this is true.
+    allow_shutdown: false
+
 
 /**/diff_drive_base_controller:
   ros__parameters:
