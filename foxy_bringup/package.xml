@@ -20,6 +20,7 @@
   <exec_depend>diff_drive_controller</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend> <!-- from ros2_controll -->
   <exec_depend>diff_drive_base_controller</exec_depend> <!-- from ros2_controll -->
+  <exec_depend>foxy_controllers</exec_depend>
 
   <export>
     <build_type>ament_python</build_type>
