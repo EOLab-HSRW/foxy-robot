@@ -22,7 +22,7 @@
     current_deadband_ma: 50.0
 
     # Safety gate: the ~/shutdown service exists, but returns failure unless this is true.
-    allow_shutdown: false
+    allow_shutdown: true
 
 
 /**/diff_drive_base_controller:
