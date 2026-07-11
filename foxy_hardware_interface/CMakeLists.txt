@@ -9,6 +9,10 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(std_msgs REQUIRED)
+
+add_executable(button src/button.cpp)
+ament_target_dependencies(button rclcpp std_msgs)
 
 add_library(foxy_hardware_interface SHARED
     src/motors_hardware.cpp
@@ -35,6 +39,11 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+install(
+  TARGETS
+  button
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
