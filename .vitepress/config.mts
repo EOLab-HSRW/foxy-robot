@@ -27,9 +27,21 @@ export default defineConfig({
         ]
       },
       {
-        text: 'For Developers',
+        text: 'For ROS Developers',
         items: [
           { text: 'Developer guide', link: '/docs/developers/guide' },
+        ]
+      },
+      {
+        text: 'For System Developers',
+        items: [
+          { text: 'System (OS) overview', link: '/docs/system/overview' },
+        ]
+      },
+      {
+        text: 'For Hardware Developers',
+        items: [
+          { text: 'Pinouts', link: '/docs/hardware/pinouts' },
         ]
       },
     ],

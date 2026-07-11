@@ -17,6 +17,70 @@ Comments in possible scenarios:
 - Can I use a virtual machine? Technically yes but it is very problematic with the graphics drivers and you will experience problems with the simulations so it is not recommended to use virtual machine. But if you still want to try, go ahead and good luck.
 - Can I use a Mac: No! 😅.
 
+## Manual Install
+
+First let remove any Gazebo Fortress and install Gazebo Harmonic:
+
+```sh
+sudo apt remove ignition* ros-humble-ros-ign* && sudo apt autoremove
+
+sudo apt-get update
+sudo apt-get install curl lsb-release gnupg
+
+sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] https://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+sudo apt-get update
+
+sudo apt-get install ros-humble-ros-gzharmonic
+```
+
+install our drivers:
+
+```
+sudo apt install foxy-drivers
+
+```
+
+Setup workspace:
+
+```sh
+mkdir -p ~/foxy_ws/src
+cd ~/foxy_ws/src
+git clone https://github.com/EOLab-HSRW/foxy-robot/
+cd ~/foxy_ws
+source /opt/ros/humble/setup.bash
+
+# in some cases you need to init the rosdep
+sudo rosdep init
+rosdep update
+```
+
+Setup ROS 2 Humble + ROS 2 Control + Gazebo Harmonic:
+```sh
+cd ~/foxy_ws/src
+git clone https://github.com/ros-controls/gz_ros2_control -b humble
+cd ~/foxy_ws/
+export GZ_VERSION=harmonic
+rosdep install -r --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y --skip-keys="ros_gz_bridge ros_gz_sim"
+colcon build --packages-up-to gz_ros2_control --symlink-install
+colcon build --symlink-install
+source install/setup.bash
+```
+
+```
+ros2 launch foxy_bringup start.launch.py
+```
+
+## Optimal
+
+```
+wget -O /tmp/eolab-drones-sources.deb \
+  https://github.com/EOLab-HSRW/drones-sources/releases/latest/download/drones-sources_latest.deb
+sudo apt-get install /tmp/eolab-drones-sources.deb
+sudo apt install ros-humble-foxy-bringup-sim
+```
+
+
 ## Recommended
 
 ```
