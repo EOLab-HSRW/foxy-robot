@@ -1,14 +1,23 @@
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    OpaqueFunction,
+    RegisterEventHandler,
+    TimerAction,
+)
+from launch.event_handlers import OnProcessExit
 from launch.substitutions import LaunchConfiguration
 
 from launch_ros.actions import Node
+
 
 def arg_is_true(context, name: str) -> bool:
     return (
         LaunchConfiguration(name)
         .perform(context) == "true"
     )
+
 
 def sensor_bridge(
     *,
@@ -28,6 +37,7 @@ def sensor_bridge(
         **node_kwargs,
     )
 
+
 def launch_setup(context):
 
     actions = []
@@ -38,33 +48,66 @@ def launch_setup(context):
     pos_y = LaunchConfiguration("pos_y").perform(context)
     pos_z = LaunchConfiguration("pos_z").perform(context)
 
+    view_follow = arg_is_true(context, "view_follow")
+
     enable_camera_front = arg_is_true(context, "enable/camera/front")
     enable_tof_front = arg_is_true(context, "enable/tof/front")
     enable_imu_front = arg_is_true(context, "enable/imu/front")
 
-    actions.append(
-        Node(
-            package="ros_gz_sim",
-            executable="create",
-            arguments=[
-                "-name",
-                robot_name,
-                "-topic",
-                f"/{robot_name}/robot_description",
-                "-x",
-                pos_x,
-                "-y",
-                pos_y,
-                "-z",
-                pos_z,
-                "-world",
-                world_name,
-            ],
-            output="both",
-        )
+    spawn_robot = Node(
+        package="ros_gz_sim",
+        executable="create",
+        arguments=[
+            "-name",
+            robot_name,
+            "-topic",
+            f"/{robot_name}/robot_description",
+            "-x",
+            pos_x,
+            "-y",
+            pos_y,
+            "-z",
+            pos_z,
+            "-world",
+            world_name,
+        ],
+        output="both",
     )
 
+    if view_follow:
+        follow_robot = ExecuteProcess(
+            cmd=[
+                "gz",
+                "topic",
+                "-t",
+                "/gui/track",
+                "-m",
+                "gz.msgs.CameraTrack",
+                "-p",
+                (
+                    "track_mode: FOLLOW "
+                    f'follow_target: {{name: "{robot_name}"}} '
+                    "follow_offset: {x: -1.0, y: 0.0, z: 0.7}"
+                ),
+            ],
+            output="screen",
+        )
 
+        actions.append(
+            RegisterEventHandler(
+                OnProcessExit(
+                    target_action=spawn_robot,
+                    on_exit=[
+                        TimerAction(
+                            period=1.0,
+                            actions=[follow_robot],
+                        ),
+                    ],
+                )
+            )
+        )
+
+    actions.append(spawn_robot)
 
     if enable_camera_front:
         actions.append(
@@ -110,7 +153,7 @@ def launch_setup(context):
 
     if enable_imu_front:
         actions.append(
-             sensor_bridge(
+            sensor_bridge(
                 robot_name=robot_name,
                 sensor_name="imu_front",
                 arguments=[
@@ -142,6 +185,10 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="pos_z"
+        ),
+        DeclareLaunchArgument(
+            name="view_follow",
+            default_value="true",
         ),
         DeclareLaunchArgument(
             name="enable/camera/front",
