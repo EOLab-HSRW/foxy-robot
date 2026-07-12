@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Gazebo approximation of a VL53L0X single-zone ToF sensor.
+    The real VL53L0X reports one distance measurement per ranging cycle.
+    Therefore, the Gazebo emulation publishes one lidar range sample.
+  -->
+  <xacro:macro
+    name="vl53l0x"
+    params="name parent_link namespace system
+            min_range:=0.03
+            max_range:=2.0
+            update_rate:=30.0
+            noise_stddev:=0.01
+            visualize:=false
+            *origin">
+    <link name="${name}_link">
+      <inertial>
+        <mass value="0.001"/>
+        <inertia
+          ixx="1.0e-9" ixy="0.0" ixz="0.0"
+          iyy="1.0e-9" iyz="0.0"
+          izz="1.0e-9"/>
+      </inertial>
+    </link>
+
+    <joint name="${name}_joint" type="fixed">
+      <parent link="${parent_link}"/>
+      <child link="${name}_link"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <!-- Gazebo sensor exists only in simulation. -->
+    <xacro:if value="${system == 'sim'}">
+      <gazebo reference="${name}_link">
+        <sensor name="${name}" type="gpu_lidar">
+          <pose relative_to="${name}_link">
+            0 0 0 0 0 0
+          </pose>
+          <topic>/${namespace}/${name}/range</topic>
+          <update_rate>${update_rate}</update_rate>
+          <always_on>true</always_on>
+          <visualize>${visualize}</visualize>
+          <ray>
+            <scan>
+              <!-- One central measurement, not a spatial scan. -->
+              <horizontal>
+                <samples>1</samples>
+                <resolution>1</resolution>
+                <min_angle>0.0</min_angle>
+                <max_angle>0.0</max_angle>
+              </horizontal>
+              <vertical>
+                <samples>1</samples>
+                <resolution>1</resolution>
+                <min_angle>0.0</min_angle>
+                <max_angle>0.0</max_angle>
+              </vertical>
+            </scan>
+            <range>
+              <min>${min_range}</min>
+              <max>${max_range}</max>
+              <resolution>0.001</resolution>
+            </range>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>${noise_stddev}</stddev>
+            </noise>
+          </ray>
+          <frame_id>${name}_link</frame_id>
+          <ignition_frame_id>${name}_link</ignition_frame_id>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
+</robot>
