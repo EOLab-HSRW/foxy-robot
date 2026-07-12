@@ -1,42 +1,161 @@
 <?xml version="1.0"?>
+
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="rgb_camera_generic" params="name parent_link namespace system *origin">
+  <!--
+    Waveshare RPi Camera (G) / OV5647 approximation.
+
+    Physical camera:
+      - OV5647, 5 MP
+      - 1920 x 1080 video mode
+      - 160 degree diagonal fisheye FoV
+      - 3.15 mm focal length
+      - manual focus
+      - rolling shutter
+
+    Simulation limitations:
+      - Gazebo does not model manual focus or rolling-shutter timing here.
+      - The fisheye projection is approximated with an equidistant lens.
+      - noise_stddev is a tunable simulation value, not a datasheet value.
+  -->
+  <xacro:macro
+    name="rgb_camera_generic"
+    params="
+      name
+      parent_link
+      namespace
+      system
+      image_width:=1920
+      image_height:=1080
+      update_rate:=30.0
+      horizontal_fov:=2.433898
+      near_clip:=0.05
+      far_clip:=100.0
+      noise_stddev:=0.007
+      visualize:=true
+      *origin">
+
+    <!--
+      Physical camera mounting frame.
+
+      ROS body-frame convention:
+        +X forward
+        +Y left
+        +Z up
+    -->
     <link name="${name}_link">
+      <visual>
+        <!--
+          Approximate envelope:
+            X: lens/module depth
+            Y: board width
+            Z: board height
+        -->
+        <origin xyz="-0.010 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.010 0.015 0.014"/>
+        </geometry>
+        <material name="${name}_pcb_material">
+          <color rgba="0.05 0.15 0.05 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="-0.010 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="0.020 0.025 0.024"/>
+        </geometry>
+      </collision>
+      <!-- Approximate 16 g mass including the camera assembly. -->
       <inertial>
-        <mass value="0.01"/>
-        <inertia ixx="0.000166667" ixy="0.0" ixz="0.0" iyy="0.000166667" iyz="0.0" izz="0.000166667"/>
+        <origin xyz="-0.010 0 0" rpy="0 0 0"/>
+        <mass value="0.016"/>
+        <inertia
+          ixx="1.6013e-6"
+          ixy="0.0"
+          ixz="0.0"
+          iyy="1.3013e-6"
+          iyz="0.0"
+          izz="1.3667e-6"/>
       </inertial>
     </link>
     <joint name="${name}_joint" type="fixed">
       <parent link="${parent_link}"/>
       <child link="${name}_link"/>
-      <xacro:insert_block name="origin" />
+      <xacro:insert_block name="origin"/>
     </joint>
+    <!--
+      REP-103 optical-frame convention:
+        +Z forward
+        +X right
+        +Y down
+    -->
+    <link name="${name}_optical_frame"/>
+    <joint name="${name}_optical_joint" type="fixed">
+      <parent link="${name}_link"/>
+      <child link="${name}_optical_frame"/>
+      <origin
+        xyz="0 0 0"
+        rpy="${-pi / 2} 0 ${-pi / 2}"/>
+    </joint>
+    <!-- Gazebo implementation exists only in simulation. -->
     <xacro:if value="${system == 'sim'}">
       <gazebo reference="${name}_link">
-        <plugin filename="gz-sim-imu-system"
-          name="gz::sim::systems::Imu">
-        </plugin>
-        <sensor name="${name}" type="camera">
-          <camera>
-            <horizontal_fov>1.047</horizontal_fov>
+        <!--
+          A normal camera uses a pinhole projection and is unsuitable for a
+          160-degree fisheye lens. Use Gazebo's wide-angle camera instead.
+        -->
+        <sensor name="${name}" type="wideanglecamera">
+          <pose>0 0 0 0 0 0</pose>
+          <always_on>true</always_on>
+          <update_rate>${update_rate}</update_rate>
+          <visualize>${visualize}</visualize>
+          <topic>/${namespace}/${name}/image</topic>
+          <frame_id>${name}_optical_frame</frame_id>
+          <camera name="${name}">
+            <camera_info_topic>
+              /${namespace}/${name}/camera_info
+            </camera_info_topic>
+            <!--
+              2.433898 rad = approximately 139.45 degrees horizontal.
+
+              With an equidistant projection and a 16:9 image, this
+              approximates the advertised 160-degree diagonal field of view.
+            -->
+            <horizontal_fov>${horizontal_fov}</horizontal_fov>
             <image>
-              <width>1080</width>
-              <height>720</height>
+              <width>${image_width}</width>
+              <height>${image_height}</height>
+              <format>R8G8B8</format>
+              <anti_aliasing>4</anti_aliasing>
             </image>
             <clip>
-              <near>0.1</near>
-              <far>100</far>
+              <near>${near_clip}</near>
+              <far>${far_clip}</far>
             </clip>
+            <!--
+              Equidistant is a reasonable generic fisheye approximation:
+                image radius is proportional to incident angle.
+
+              cutoff_angle is measured from the optical axis:
+                80 degrees = half of the advertised 160-degree diagonal FoV.
+            -->
+            <lens>
+              <type>equidistant</type>
+              <scale_to_hfov>true</scale_to_hfov>
+              <cutoff_angle>1.3962634</cutoff_angle>
+              <env_texture_size>1024</env_texture_size>
+            </lens>
+            <noise>
+              <type>gaussian</type>
+              <mean>0.0</mean>
+              <stddev>${noise_stddev}</stddev>
+            </noise>
+            <optical_frame_id>
+              ${name}_optical_frame
+            </optical_frame_id>
           </camera>
-          <always_on>1</always_on>
-          <update_rate>30</update_rate>
-          <visualize>true</visualize>
-          <topic>/${namespace}/${name}/image</topic>
         </sensor>
       </gazebo>
     </xacro:if>
   </xacro:macro>
-
 </robot>
