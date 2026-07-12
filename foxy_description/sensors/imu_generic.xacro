@@ -1,33 +1,202 @@
 <?xml version="1.0"?>
+
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <xacro:macro name="imu_generic" params="name parent_link namespace system *origin">
+  <!-- MPU-6050 noise model. -->
+  <xacro:macro
+    name="mpu6050_axis_noise"
+    params="
+      stddev
+      bias_stddev
+      dynamic_bias_stddev
+      dynamic_bias_correlation_time
+      precision">
+    <noise type="gaussian_quantized">
+      <mean>0.0</mean>
+      <stddev>${stddev}</stddev>
+      <!-- Random constant bias selected when the simulation starts. -->
+      <bias_mean>0.0</bias_mean>
+      <bias_stddev>${bias_stddev}</bias_stddev>
+      <!-- Slowly changing bias / bias drift. -->
+      <dynamic_bias_stddev>
+        ${dynamic_bias_stddev}
+      </dynamic_bias_stddev>
+      <dynamic_bias_correlation_time>
+        ${dynamic_bias_correlation_time}
+      </dynamic_bias_correlation_time>
+      <!-- Approximate 16-bit ADC quantization. -->
+      <precision>${precision}</precision>
+    </noise>
+  </xacro:macro>
+
+
+  <!--
+    Gazebo approximation of an MPU-6050.
+
+    Default configuration:
+      gyro range:         +/-250 degrees/second
+      accelerometer:      +/-2 g
+      output rate:        100 Hz
+      orientation output: disabled
+
+    The MPU-6050 itself measures:
+      - three-axis angular velocity
+      - three-axis linear acceleration
+      - die temperature
+
+    It does not directly measure absolute orientation.
+  -->
+  <xacro:macro
+    name="imu_generic"
+    params="
+      name
+      parent_link
+      namespace
+      system
+      update_rate:=100.0
+      visualize:=false
+      enable_orientation:=false
+      gyro_noise_stddev:=0.000872665
+      gyro_bias_stddev:=0.00872665
+      gyro_dynamic_bias_stddev:=0.000174533
+      gyro_precision:=0.000133231
+      accel_noise_stddev:=0.02774
+      accel_bias_stddev:=0.0980665
+      accel_dynamic_bias_stddev:=0.00196133
+      accel_precision:=0.000598550
+      bias_correlation_time:=1000.0
+      *origin">
     <link name="${name}_link">
+
+      <!--
+        Approximate mass and inertia for a small MPU-6050 breakout board.
+        The link is fixed, so these values have negligible influence on the
+        robot dynamics.
+      -->
       <inertial>
-        <mass value="0.01"/>
-        <inertia ixx="0.000166667" ixy="0.0" ixz="0.0" iyy="0.000166667" iyz="0.0" izz="0.000166667"/>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.003"/>
+
+        <inertia
+          ixx="5.85e-8"
+          ixy="0.0"
+          ixz="0.0"
+          iyy="1.0225e-7"
+          iyz="0.0"
+          izz="1.5625e-7"/>
       </inertial>
+
+      <visual>
+        <geometry>
+          <box size="0.020 0.015 0.003"/>
+        </geometry>
+        <material name="${name}_pcb">
+          <color rgba="0.05 0.20 0.10 1.0"/>
+        </material>
+      </visual>
+
+      <collision>
+        <geometry>
+          <box size="0.020 0.015 0.003"/>
+        </geometry>
+      </collision>
     </link>
+
     <joint name="${name}_joint" type="fixed">
       <parent link="${parent_link}"/>
       <child link="${name}_link"/>
-      <xacro:insert_block name="origin" />
+      <xacro:insert_block name="origin"/>
     </joint>
+
+    <!-- Gazebo implementation exists only during simulation. -->
     <xacro:if value="${system == 'sim'}">
+      <!--
+        Required by Gazebo Sim for IMU sensor processing.
+        This should appear only once in the robot. The current Foxy
+        description contains one IMU, so keeping it here is acceptable.
+      -->
       <gazebo>
-        <plugin filename="gz-sim-imu-system"
-          name="gz::sim::systems::Imu">
-        </plugin>
+        <plugin
+          filename="gz-sim-imu-system"
+          name="gz::sim::systems::Imu"/>
       </gazebo>
+
+
       <gazebo reference="${name}_link">
         <sensor name="${name}" type="imu">
-          <always_on>1</always_on>
-          <update_rate>100</update_rate>
-          <visualize>true</visualize>
+          <pose>0 0 0 0 0 0</pose>
+          <always_on>true</always_on>
+          <update_rate>${update_rate}</update_rate>
+          <visualize>${visualize}</visualize>
           <topic>/${namespace}/${name}/imu</topic>
+          <!-- Gazebo Garden / Harmonic naming. -->
+          <gz_frame_id>${name}_link</gz_frame_id>
+          <!-- Compatibility with Gazebo Fortress-era sensor libraries. -->
+          <ignition_frame_id>${name}_link</ignition_frame_id>
+          <imu>
+            <!--
+              A raw MPU-6050 does not provide an absolute orientation
+              measurement. Orientation should be calculated by an external
+              filter or by software using the MPU DMP.
+            -->
+            <enable_orientation>${enable_orientation}</enable_orientation>
+            <!-- Gyroscope output, expressed in rad/s. -->
+            <angular_velocity>
+              <x>
+                <xacro:mpu6050_axis_noise
+                  stddev="${gyro_noise_stddev}"
+                  bias_stddev="${gyro_bias_stddev}"
+                  dynamic_bias_stddev="${gyro_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${gyro_precision}"/>
+              </x>
+              <y>
+                <xacro:mpu6050_axis_noise
+                  stddev="${gyro_noise_stddev}"
+                  bias_stddev="${gyro_bias_stddev}"
+                  dynamic_bias_stddev="${gyro_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${gyro_precision}"/>
+              </y>
+              <z>
+                <xacro:mpu6050_axis_noise
+                  stddev="${gyro_noise_stddev}"
+                  bias_stddev="${gyro_bias_stddev}"
+                  dynamic_bias_stddev="${gyro_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${gyro_precision}"/>
+              </z>
+            </angular_velocity>
+            <!-- Accelerometer output, expressed in m/s^2. -->
+            <linear_acceleration>
+              <x>
+                <xacro:mpu6050_axis_noise
+                  stddev="${accel_noise_stddev}"
+                  bias_stddev="${accel_bias_stddev}"
+                  dynamic_bias_stddev="${accel_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${accel_precision}"/>
+              </x>
+              <y>
+                <xacro:mpu6050_axis_noise
+                  stddev="${accel_noise_stddev}"
+                  bias_stddev="${accel_bias_stddev}"
+                  dynamic_bias_stddev="${accel_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${accel_precision}"/>
+              </y>
+              <z>
+                <xacro:mpu6050_axis_noise
+                  stddev="${accel_noise_stddev}"
+                  bias_stddev="${accel_bias_stddev}"
+                  dynamic_bias_stddev="${accel_dynamic_bias_stddev}"
+                  dynamic_bias_correlation_time="${bias_correlation_time}"
+                  precision="${accel_precision}"/>
+              </z>
+            </linear_acceleration>
+          </imu>
         </sensor>
       </gazebo>
     </xacro:if>
   </xacro:macro>
-
 </robot>
