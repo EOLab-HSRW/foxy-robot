@@ -43,7 +43,7 @@ def launch_setup(context):
 
     start_gz_server = IncludeLaunchDescription(
         PathJoinSubstitution([
-            FindPackageShare("ros_gz_sim"),
+            FindPackageShare("foxy_bringup_sim"),
             "launch",
             "gz_sim.launch.py"
         ]),
