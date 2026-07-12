@@ -109,7 +109,7 @@
     </joint>
 
     <!-- Gazebo implementation exists only during simulation. -->
-    <xacro:if value="${system == 'sim'}">
+    <xacro:if value="${system == 'gz'}">
       <!--
         Required by Gazebo Sim for IMU sensor processing.
         This should appear only once in the robot. The current Foxy

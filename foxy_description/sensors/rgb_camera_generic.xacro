@@ -98,7 +98,7 @@
         rpy="${-pi / 2} 0 ${-pi / 2}"/>
     </joint>
     <!-- Gazebo implementation exists only in simulation. -->
-    <xacro:if value="${system == 'sim'}">
+    <xacro:if value="${system == 'gz'}">
       <gazebo reference="${name}_link">
         <!--
           A normal camera uses a pinhole projection and is unsuitable for a

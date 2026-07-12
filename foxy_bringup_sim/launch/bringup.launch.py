@@ -6,7 +6,47 @@ from launch_ros.actions import Node
 
 def launch_setup(context):
 
-    robot_name: str = LaunchConfiguration("robot_name").perform(context)
+    robot_name = LaunchConfiguration("robot_name").perform(context)
+    world = LaunchConfiguration("world").perform(context)
+    verbose = LaunchConfiguration("verbose").perform(context)
+    headless = LaunchConfiguration("headless").perform(context)
+
+    launch_world = IncludeLaunchDescription(
+        PathJoinSubstitution([
+            FindPackageShare("foxy_bringup_sim"),
+            "launch",
+            "world.launch.py"
+        ]),
+        launch_arguments={
+            "robot_name": robot_name,
+            "world_name": world,
+            "verbose": verbose,
+            "headless": headless,
+        }.items()
+    )
+    spawn_robot = IncludeLaunchDescription(
+        PathJoinSubstitution([
+            FindPackageShare("foxy_bringup_sim"),
+            "launch",
+            "spawn.launch.py"
+        ]),
+        launch_arguments={
+            "robot_name": robot_name,
+            "world_name": world,
+            "verbose": verbose,
+            "pos_x": "0.0",
+            "pos_y": "0.0",
+            "pos_z": "0.2",
+            "enable/camera/front": LaunchConfiguration("enable/camera/front"),
+            "enable/tof/front": LaunchConfiguration("enable/tof/front"),
+            "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+        }.items()
+    )
+
+    return [
+        launch_world,
+        spawn_robot
+    ]
 
     # note: this is the launch for sim
     # so, always use_sim_time = True
@@ -46,13 +86,13 @@ def launch_setup(context):
         output='screen'
     )
 
-    Node(
+    ros_gz_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
         arguments=[
             '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock',
-            # f'/{robot_name}/front_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
-            # f'/{robot_name}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
+            f'/{robot_name}/front_camera/image@sensor_msgs/msg/Image[gz.msgs.Image',
+            f'/{robot_name}/front_camera/camera_info@sensor_msgs/msg/CameraInfo[gz.msgs.CameraInfo',
             # f'/{robot_name}/imu_sensor/imu@sensor_msgs/msg/Imu[gz.msgs.IMU',
             # f'/{robot_name}/lidar_sensor/scan@sensor_msgs/msg/LaserScan[gz.msgs.LaserScan',
         ],
@@ -71,36 +111,49 @@ def launch_setup(context):
 
     return [
         include_gz,
-        spawn_robot
+        spawn_robot,
+        ros_gz_bridge
     ]
 
 def generate_launch_description() -> LaunchDescription:
 
-    ld = LaunchDescription()
-
-    ld.add_action(DeclareLaunchArgument(
-        "robot_name"
-    ))
-    ld.add_action(DeclareLaunchArgument(
-        "pos_x"
-    ))
-    ld.add_action(DeclareLaunchArgument(
-        "pos_y"
-    ))
-    ld.add_action(DeclareLaunchArgument(
-        "pos_z"
-    ))
-    ld.add_action(DeclareLaunchArgument(
-        "world",
-        choices=[
-            "empty",
-            "small_loop",
-            "small_map",
-            "large_map",
-            "straight_lane"
-        ],
-    ))
-
-    ld.add_action(OpaqueFunction(function=launch_setup))
-
-    return ld
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            "robot_name"
+        ),
+        DeclareLaunchArgument(
+            "verbose"
+        ),
+        DeclareLaunchArgument(
+            "pos_x"
+        ),
+        DeclareLaunchArgument(
+            "pos_y"
+        ),
+        DeclareLaunchArgument(
+            "pos_z"
+        ),
+        DeclareLaunchArgument(
+            "world",
+            choices=[
+                "empty",
+                "small_loop",
+                "small_map",
+                "large_map",
+                "straight_lane"
+            ]
+        ),
+        DeclareLaunchArgument(
+            "headless"
+        ),
+        DeclareLaunchArgument(
+            "enable/camera/front"
+        ),
+        DeclareLaunchArgument(
+            "enable/tof/front"
+        ),
+        DeclareLaunchArgument(
+            "enable/imu/front"
+        ),
+        OpaqueFunction(function=launch_setup)
+    ])

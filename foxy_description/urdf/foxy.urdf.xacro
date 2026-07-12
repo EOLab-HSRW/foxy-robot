@@ -3,41 +3,47 @@
   <!-- The following set of ARGUMENTS are used by launch -->
   <xacro:arg name="robot_name" default="default"/>
   <xacro:arg name="system" default="none"/>
-  <xacro:arg name="distro" default="none"/> <!-- for internal use -->
+
+  <xacro:arg name="enable/camera/front" default="true"/>
+  <xacro:arg name="camera/front/name" default="camera_front"/>
+
+  <xacro:arg name="enable/imu/front" default="true"/>
+  <xacro:arg name="imu/front/name" default="imu_front"/>
+
+  <xacro:arg name="enable/tof/front" default="true"/>
+  <xacro:arg name="tof/front/name" default="tof_front"/>
 
   <!-- set of properties for internal use (not used by launch) -->
   <xacro:property name="namespace" default="$(arg robot_name)"/>
-  <!-- <xacro:property name="root_frame" default="${namespace}/base_link" /> -->
   <xacro:property name="root_frame" default="base_link" />
   <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'jazzy', 'kilted']}"/>
-  <!-- HARLEY DEBUG: removing humble in my setup -->
-  <!-- <xacro:property name="ros2_gz_before_renamed" value="${['galatic', 'foxy']}"/> -->
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
-  <xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
-  <xacro:include filename="$(find foxy_description)/sensors/imu_generic.xacro"/>
-  <xacro:include filename="$(find foxy_description)/sensors/lidar_generic.xacro"/>
-  <xacro:include filename="$(find foxy_description)/sensors/vl53l0x.xacro"/>
+    <xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
+    <xacro:include filename="$(find foxy_description)/sensors/imu_generic.xacro"/>
+    <xacro:include filename="$(find foxy_description)/sensors/vl53l0x.xacro"/>
 
   <xacro:foxy_base root_frame="${root_frame}"/>
 
-  <xacro:rgb_camera_generic name="front_camera" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
-    <origin xyz="0.08938 0 0.07209" rpy="0.0 ${radians(16.1)} 0" />
-  </xacro:rgb_camera_generic>
+  <xacro:if value="$(arg enable/camera/front)">
+    <xacro:rgb_camera_generic name="$(arg camera/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
+      <origin xyz="0.08938 0 0.07209" rpy="0.0 ${radians(16.1)} 0" />
+    </xacro:rgb_camera_generic>
+  </xacro:if>
 
-  <xacro:imu_generic name="imu_sensor" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
-    <origin xyz="0 0 0" rpy="0 0 0" />
-  </xacro:imu_generic>
+  <xacro:if value="$(arg enable/imu/front)">
+    <xacro:imu_generic name="$(arg imu/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
+      <origin xyz="0 0 0" rpy="0 0 0" />
+    </xacro:imu_generic>
+  </xacro:if>
 
-  <xacro:vl53l0x name="vl53l0x/front" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}" visualize="true">
-    <origin xyz="0.10678 0 0.037" rpy="0 0 0" />
-  </xacro:vl53l0x>
+  <xacro:if value="$(arg enable/tof/front)">
+    <xacro:vl53l0x name="$(arg tof/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}" visualize="true">
+      <origin xyz="0.10678 0 0.037" rpy="0 0 0" />
+    </xacro:vl53l0x>
+  </xacro:if>
 
-  <!-- <xacro:lidar_generic name="lidar_sensor" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}"> -->
-  <!--   <origin xyz="0 0 0.12" rpy="0 0 0" /> -->
-  <!-- </xacro:lidar_generic> -->
-
-  <xacro:if value="${xacro.arg('system') == 'sim' and xacro.arg('distro') in ros2_gz_before_renamed}">
+  <xacro:if value="${xacro.arg('system') == 'gz' and '$(env ROS_DISTRO)' in ros2_gz_before_renamed}">
     <!-- the plugin was renamed to gz_ros2_control from Iron -->
     <ros2_control name="GazeboSimSystem" type="system">
       <hardware>

@@ -25,169 +25,206 @@ from ament_index_python.packages import PackageNotFoundError
 
 
 def launch_setup(context) -> list[object]:
-    mode: str = LaunchConfiguration("mode").perform(context)
+    system = LaunchConfiguration("system").perform(context)
+    robot_name = LaunchConfiguration("robot_name").perform(context)
+    verbose = LaunchConfiguration("verbose").perform(context)
 
-    # for ROS-reasons the launch system uses string for all
-    # launch arguments.
-    is_sim: str = "true" if mode == "sim" else "false"
+    pkg = ""
 
-    # but, ROS nodes they typed the node parameters, so:
-    use_sim_time: bool = True if is_sim == "true" else False
-
-
-    pkg: str = "foxy_bringup_sim" if mode == "sim" else "foxy_bringup_hw"
+    common_arguments = {
+        "robot_name": robot_name,
+        "verbose": verbose,
+        "enable/camera/front": LaunchConfiguration("enable/camera/front"),
+        "enable/tof/front": LaunchConfiguration("enable/tof/front"),
+        "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+    }
+    if (system == "gz"):
+        pkg = "foxy_bringup_sim"
+        system_arguments = {
+            "pos_x": LaunchConfiguration("sim/pos_x"),
+            "pos_y": LaunchConfiguration("sim/pos_y"),
+            "pos_z": LaunchConfiguration("sim/pos_z"),
+            "world": LaunchConfiguration("sim/world"),
+            "headless": LaunchConfiguration("sim/headless"),
+            "sim/camera_follow": LaunchConfiguration("sim/camera_follow"), # TODO
+        }
+    elif (system == "hw"):
+        pkg = "foxy_bringup_hw"
+        system_arguments = {
+        }
 
     try:
         share: str = FindPackageShare(pkg).perform(context)
     except PackageNotFoundError:
         return [
-            LogInfo(msg=f"'{pkg}' is not installed.")
+            LogInfo(msg=f"'{pkg}' not found.")
         ]
 
-    bringup: str = PathJoinSubstitution([FindPackageShare(pkg), "launch", "bringup.launch.py"])
+    bringup_path = PathJoinSubstitution([share, "launch", "bringup.launch.py"])
 
-    include_bringup_sim = IncludeLaunchDescription(
-        bringup,
+    bringup_arguments = common_arguments | system_arguments
+
+    bringup = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(bringup_path),
+        launch_arguments=bringup_arguments.items(),
+    )
+
+    single = IncludeLaunchDescription(
+        PathJoinSubstitution([
+            FindPackageShare("foxy_bringup"),
+            "launch",
+            "single.launch.py"
+        ]),
         launch_arguments={
-            "robot_name": LaunchConfiguration("robot_name"),
-            "pos_x": LaunchConfiguration("pos_x"),
-            "pos_y": LaunchConfiguration("pos_y"),
-            "pos_z": LaunchConfiguration("pos_z"),
-            "world": LaunchConfiguration("world"),
-        }.items(),
-        condition=IfCondition(is_sim)
+            "system": system,
+            "robot_name": robot_name,
+            "standalone": "true",
+            "enable/camera/front": LaunchConfiguration("enable/camera/front"),
+            "enable/tof/front": LaunchConfiguration("enable/tof/front"),
+            "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+            "verbose": verbose,
+        }.items()
     )
-    include_bringup_hw = IncludeLaunchDescription(
-        bringup,
-        condition=UnlessCondition(is_sim)
-    )
-
-    robot_desc_path: str = PathJoinSubstitution([
-        FindPackageShare("foxy_description"),
-        "urdf",
-        "foxy.urdf.xacro"
-    ]).perform(context)
-
-    robot_desc_content = Command([
-        PathJoinSubstitution([FindExecutable(name="xacro")]),
-        " ",
-        robot_desc_path,
-        " ",
-        "system:=", mode,
-        " ",
-        "robot_name:=", LaunchConfiguration("robot_name").perform(context),
-        " ",
-        "distro:=", EnvironmentVariable("ROS_DISTRO")
-    ]).perform(context)
-
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        output="both",
-        parameters=[
-            {"robot_description": robot_desc_content},
-            {"use_sim_time": use_sim_time }
-        ]
-    )
-
-    controllers_path = PathJoinSubstitution([
-        FindPackageShare("foxy_bringup"),
-        "config",
-        "controllers.yaml"
-    ])
-
-    ros2_control_node = Node(
-        package="controller_manager",
-        executable="ros2_control_node",
-        parameters=[
-            controllers_path,
-        ],
-        remappings=[
-            ("~/robot_description", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description"),
-        ],
-        output="screen",
-    )
-
-    cm_spawner_node = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=[
-            "joint_state_broadcaster",
-            "diff_drive_base_controller",
-            "battery_state_broadcaster",
-        ],
-        output="screen",
-    )
-
-    on_start_cm = RegisterEventHandler(
-        OnProcessStart(
-            target_action=ros2_control_node,
-            on_start=[cm_spawner_node],
-        )
-    )
-
 
     return [
-        PushRosNamespace(LaunchConfiguration("robot_name")),
-        include_bringup_sim,
-        include_bringup_hw,
-        robot_state_publisher,
-        ros2_control_node,
-        on_start_cm,
+        single,
+        bringup,
     ]
+
+    # controllers_path = PathJoinSubstitution([
+    #     FindPackageShare("foxy_bringup"),
+    #     "config",
+    #     "controllers.yaml"
+    # ])
+    #
+    # ros2_control_node = Node(
+    #     package="controller_manager",
+    #     executable="ros2_control_node",
+    #     parameters=[
+    #         controllers_path,
+    #     ],
+    #     remappings=[
+    #         ("~/robot_description", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description"),
+    #     ],
+    #     output="screen",
+    # )
+    #
+    # cm_spawner_node = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=[
+    #         "joint_state_broadcaster",
+    #         "diff_drive_base_controller",
+    #         "battery_state_broadcaster",
+    #     ],
+    #     output="screen",
+    # )
+    #
+    # on_start_cm = RegisterEventHandler(
+    #     OnProcessStart(
+    #         target_action=ros2_control_node,
+    #         on_start=[cm_spawner_node],
+    #     )
+    # )
+    #
+    #
+    # return [
+    #     PushRosNamespace(LaunchConfiguration("robot_name")),
+    #     include_bringup_sim,
+    #     include_bringup_hw,
+    #     robot_state_publisher,
+    #     ros2_control_node,
+    #     on_start_cm,
+    # ]
 
 
 def generate_launch_description() -> LaunchDescription:
 
-    launch_args = []
-
-    launch_args.append(DeclareLaunchArgument(
-        "mode",
-        default_value="sim",
-        choices=["hw", "sim"],
-        description="Select hardware or simulation bringup",
-    ))
-
-    launch_args.append(DeclareLaunchArgument(
-        "robot_name",
-        default_value="foxy",
-        description="Robot name. This name is used as namespace."
-    ))
-
-    launch_args.append(DeclareLaunchArgument(
-        "pos_x",
-        default_value="0.0",
-        description="Start position in x axis (only use in mode:=sim)."
-    ))
-
-    launch_args.append(DeclareLaunchArgument(
-        "pos_y",
-        default_value="0.0",
-        description="Start position in y axis (only use in mode:=sim)."
-    ))
-
-    launch_args.append(DeclareLaunchArgument(
-        "pos_z",
-        default_value="0.2",
-        description="Start position in z axis (only use in mode:=sim)."
-    ))
-
-    launch_args.append(DeclareLaunchArgument(
-        "world",
-        default_value="small_loop",
-        choices=[
-            "empty",
-            "small_loop",
-            "small_map",
-            "large_map",
-            "straight_lane"
-        ],
-        description="Start simulated world (only use in mode:=sim)."
-    ))
-
-    ld = LaunchDescription(launch_args)
-
-    ld.add_action(OpaqueFunction(function=launch_setup))
-
-    return ld
+    return LaunchDescription([
+        DeclareLaunchArgument(
+            name="system",
+            default_value=EnvironmentVariable(
+                "FOXY_SYSTEM",
+                default_value="gz"
+            ),
+            choices=["hw", "gz"],
+            description="Select the simulation or hardware system."
+        ),
+        DeclareLaunchArgument(
+            name="robot_name",
+            default_value=EnvironmentVariable(
+                "FOXY_NAME",
+                default_value="foxy"
+            ),
+            description="Name of the robot. This is use as namespace"
+        ),
+        DeclareLaunchArgument(
+            name="enable/camera/front",
+            default_value="true",
+            choices=["true", "false"],
+            description="Enable camera."
+        ),
+        DeclareLaunchArgument(
+            name="enable/tof/front",
+            default_value="true",
+            choices=["true", "false"],
+            description="Enable time-of-flight."
+        ),
+        DeclareLaunchArgument(
+            name="enable/imu/front",
+            default_value="true",
+            choices=["true", "false"],
+            description="Enable imu."
+        ),
+        DeclareLaunchArgument(
+            name="verbose",
+            default_value="false",
+            choices=["true", "false"],
+            description="Enable verbose launch output.",
+        ),
+        DeclareLaunchArgument(
+            name="sim/pos_x",
+            default_value="0.0",
+            description="Robot spawn X position.",
+        ),
+        DeclareLaunchArgument(
+            name="sim/pos_y",
+            default_value="0.0",
+            description="Robot spawn Y position.",
+        ),
+        DeclareLaunchArgument(
+            name="sim/pos_z",
+            default_value="0.8",
+            description="Robot spawn Z position.",
+        ),
+        DeclareLaunchArgument(
+            name="sim/world",
+            default_value="small_loop",
+            choices=[
+                "empty",
+                "small_loop",
+                "small_map",
+                "large_map",
+                "straight_lane"
+            ],
+            description=(
+                "Simulation world name without the '.sdf' extension."
+            ),
+        ),
+        DeclareLaunchArgument(
+            name="sim/headless",
+            default_value="false",
+            choices=["true", "false"],
+            description="Run the simulator without a GUI"
+        ),
+        DeclareLaunchArgument(
+            name="sim/camera_follow",
+            default_value="true",
+            choices=["true", "false"],
+            description=(
+                "Make the simulator GUI camera follow the spawned drone."
+                "Ignore if sim/headless:=true."
+            )
+        ),
+        OpaqueFunction(function=launch_setup)
+    ])

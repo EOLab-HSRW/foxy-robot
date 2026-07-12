@@ -32,7 +32,7 @@
     </joint>
 
     <!-- Gazebo sensor exists only in simulation. -->
-    <xacro:if value="${system == 'sim'}">
+    <xacro:if value="${system == 'gz'}">
       <gazebo reference="${name}_link">
         <sensor name="${name}" type="gpu_lidar">
           <pose relative_to="${name}_link">

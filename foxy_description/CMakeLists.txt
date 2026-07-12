@@ -7,7 +7,7 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY urdf launch sensors worlds assets gz-config meshes
+install(DIRECTORY urdf launch sensors meshes
     DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)

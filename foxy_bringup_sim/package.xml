@@ -7,15 +7,21 @@
   <maintainer email="harley.lara@outlook.com">eolab</maintainer>
   <license>TODO: License declaration</license>
 
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
   <exec_depend>foxy_bringup</exec_depend>
+  <exec_depend>foxy_description</exec_depend>
+
   <exec_depend>rviz2</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
 
+  <!-- Gazebo dependencies -->
+  <exec_depend>gz-harmonic</exec_depend>
   <exec_depend>ros_gz_sim</exec_depend>
   <exec_depend>ros_gz_bridge</exec_depend>
 
-  <exec_depend>gz-harmonic</exec_depend>
-  <buildtool_depend>ament_cmake</buildtool_depend>
+  <!-- ROS2 control and Gazebo connectors -->
+  <exec_depend>gz_ros2_control</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
