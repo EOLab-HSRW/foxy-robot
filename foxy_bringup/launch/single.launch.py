@@ -115,8 +115,6 @@ def launch_setup(context):
         ],
     )
 
-    print(robot_description)
-
     joint_state_broadcaster = controller_spawner(
         controller_name="joint_state_broadcaster",
         robot_name=robot_name,
@@ -150,6 +148,9 @@ def generate_launch_description() -> LaunchDescription:
             description="Name of the robot. This is use as namespace"
         ),
         DeclareLaunchArgument(
+            name="verbose",
+        ),
+        DeclareLaunchArgument(
             name="standalone",
             default_value="true",
             choices=["true", "false"],
@@ -160,7 +161,6 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="enable/camera/front",
-            default_value="true", # HARLEY: remove this to force selection of sensor
             choices=["true", "false"],
             description=(
                 "Enable front camera. Hardware and simulation."
@@ -168,7 +168,6 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="enable/tof/front",
-            default_value="true", # HARLEY: remove this to force selection of sensor
             choices=["true", "false"],
             description=(
                 "Enable front Time-of-Flight. Hardware and simulation."
@@ -176,14 +175,10 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="enable/imu/front",
-            default_value="true", # HARLEY: remove this to force selection of sensor
             choices=["true", "false"],
             description=(
                 "Enable IMU. Hardware and simulation."
             ),
-        ),
-        DeclareLaunchArgument(
-            name="verbose",
         ),
         OpaqueFunction(function=launch_setup)
     ])

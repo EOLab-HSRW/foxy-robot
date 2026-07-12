@@ -4,25 +4,17 @@ from launch.actions import (
     OpaqueFunction,
     IncludeLaunchDescription,
     LogInfo,
-    RegisterEventHandler,
 )
-from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import (
-    Command,
     EnvironmentVariable,
-    FindExecutable,
     LaunchConfiguration,
     PathJoinSubstitution,
+    LaunchConfiguration
 )
-from launch.event_handlers import OnProcessStart
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
 
 from launch_ros.substitutions import FindPackageShare
-from launch_ros.actions import Node, PushRosNamespace
 
 from ament_index_python.packages import PackageNotFoundError
-
 
 def launch_setup(context) -> list[object]:
     system = LaunchConfiguration("system").perform(context)
@@ -65,7 +57,7 @@ def launch_setup(context) -> list[object]:
     bringup_arguments = common_arguments | system_arguments
 
     bringup = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(bringup_path),
+        bringup_path,
         launch_arguments=bringup_arguments.items(),
     )
 
@@ -90,53 +82,6 @@ def launch_setup(context) -> list[object]:
         single,
         bringup,
     ]
-
-    # controllers_path = PathJoinSubstitution([
-    #     FindPackageShare("foxy_bringup"),
-    #     "config",
-    #     "controllers.yaml"
-    # ])
-    #
-    # ros2_control_node = Node(
-    #     package="controller_manager",
-    #     executable="ros2_control_node",
-    #     parameters=[
-    #         controllers_path,
-    #     ],
-    #     remappings=[
-    #         ("~/robot_description", f"/{LaunchConfiguration('robot_name').perform(context)}/robot_description"),
-    #     ],
-    #     output="screen",
-    # )
-    #
-    # cm_spawner_node = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=[
-    #         "joint_state_broadcaster",
-    #         "diff_drive_base_controller",
-    #         "battery_state_broadcaster",
-    #     ],
-    #     output="screen",
-    # )
-    #
-    # on_start_cm = RegisterEventHandler(
-    #     OnProcessStart(
-    #         target_action=ros2_control_node,
-    #         on_start=[cm_spawner_node],
-    #     )
-    # )
-    #
-    #
-    # return [
-    #     PushRosNamespace(LaunchConfiguration("robot_name")),
-    #     include_bringup_sim,
-    #     include_bringup_hw,
-    #     robot_state_publisher,
-    #     ros2_control_node,
-    #     on_start_cm,
-    # ]
-
 
 def generate_launch_description() -> LaunchDescription:
 

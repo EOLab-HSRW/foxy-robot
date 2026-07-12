@@ -110,8 +110,15 @@
           <update_rate>${update_rate}</update_rate>
           <visualize>${visualize}</visualize>
           <topic>/${namespace}/${name}/image</topic>
-          <frame_id>${name}_optical_frame</frame_id>
+
+          <!-- camera frame in body-frame -->
+          <gz_frame_id>${namespace}/${name}_link</gz_frame_id>
+
           <camera name="${name}">
+            <!-- In Gz harmonic this has not effect -->
+            <!-- https://github.com/gazebosim/gz-sensors/blob/504241fff44bb2bb5e86b323aac95493550bfa7d/src/WideAngleCameraSensor.cc#L491 -->
+            <!-- the workaround is implement at the bridge level in the launch file -->
+            <optical_frame_id> ${namespace}/${name}_optical_frame </optical_frame_id>
             <camera_info_topic>
               /${namespace}/${name}/camera_info
             </camera_info_topic>
@@ -150,9 +157,6 @@
               <mean>0.0</mean>
               <stddev>${noise_stddev}</stddev>
             </noise>
-            <optical_frame_id>
-              ${name}_optical_frame
-            </optical_frame_id>
           </camera>
         </sensor>
       </gazebo>

@@ -10,7 +10,7 @@ def launch_setup(context):
 
     world_name = LaunchConfiguration("world_name").perform(context)
     world_path = LaunchConfiguration("world_path").perform(context)
-    verbose = LaunchConfiguration("verbose").perform(context)
+    verbose = LaunchConfiguration("verbose").perform(context) == "true"
 
     if (world_path != ""):
         LogInfo(msg="world_path passed. Overide the world_name launch argument")
@@ -60,7 +60,7 @@ def launch_setup(context):
             "sim",
             "-g",
             "-v",
-            "4" if verbose == "true" else "1",
+            "4" if verbose else "1",
             "--gui-config",
             PathJoinSubstitution([
                 FindPackageShare("foxy_gz"),
@@ -100,6 +100,7 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="verbose",
+            choices=["true", "false"]
         ),
         DeclareLaunchArgument(
             name="headless",
