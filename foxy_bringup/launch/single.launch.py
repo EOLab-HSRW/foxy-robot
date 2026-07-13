@@ -127,11 +127,17 @@ def launch_setup(context):
         use_sim_time=use_sim_time
     )
 
+    battery_state_broadcaster = controller_spawner(
+        controller_name="battery_state_broadcaster",
+        robot_name=robot_name,
+        use_sim_time=use_sim_time
+    )
 
     return [
         robot_state_publisher,
         joint_state_broadcaster,
         diff_drive_controller,
+        battery_state_broadcaster,
     ]
 
 
