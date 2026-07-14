@@ -44,15 +44,17 @@ def launch_setup(context):
 
     mode = ""
 
+    actions = []
+
     if (system == "hw"):
-        LogInfo(msg="Running system in hardware.")
+        actions.append(LogInfo(msg="Running system in hardware."))
         use_sim_time = ParameterValue(
             False,
             value_type=bool
         )
         mode = "hardware"
     elif (system == "gz"):
-        LogInfo(msg="Running system in gazebo.")
+        actions.append(LogInfo(msg="Running system in gazebo."))
         use_sim_time = ParameterValue(
             True,
             value_type=bool
@@ -114,31 +116,60 @@ def launch_setup(context):
             log_level,
         ],
     )
+    actions.append(robot_state_publisher)
+
+    if system == "hw":
+        controllers_config = PathJoinSubstitution([
+            FindPackageShare("foxy_bringup"),
+            "config",
+            "controllers.yaml",
+        ])
+
+        control_manager = Node(
+            package="controller_manager",
+            executable="ros2_control_node",
+            namespace=robot_name,
+            output="screen",
+            parameters=[
+                controllers_config,
+                {
+                    "use_sim_time": use_sim_time,
+                },
+            ],
+            remappings=[
+                (
+                    "~/robot_description",
+                    f"/{robot_name}/robot_description",
+                ),
+            ],
+        )
+        # Note: in simulation (gz) the control manager
+        # is launch along side gazebo server, as part of the plugin:
+        # `gz_ros2_control/GazeboSimSystem` in the URDF file of the robot.
+        actions.append(control_manager)
 
     joint_state_broadcaster = controller_spawner(
         controller_name="joint_state_broadcaster",
         robot_name=robot_name,
         use_sim_time=use_sim_time
     )
+    actions.append(joint_state_broadcaster)
 
     diff_drive_controller = controller_spawner(
         controller_name="diff_drive_base_controller",
         robot_name=robot_name,
         use_sim_time=use_sim_time
     )
+    actions.append(diff_drive_controller)
 
     battery_state_broadcaster = controller_spawner(
         controller_name="battery_state_broadcaster",
         robot_name=robot_name,
         use_sim_time=use_sim_time
     )
+    actions.append(battery_state_broadcaster)
 
-    return [
-        robot_state_publisher,
-        joint_state_broadcaster,
-        diff_drive_controller,
-        battery_state_broadcaster,
-    ]
+    return actions
 
 
 
