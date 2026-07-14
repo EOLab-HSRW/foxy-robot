@@ -113,10 +113,10 @@ def launch_setup(context):
             "robot_description": robot_description,
             "frame_prefix": f"{robot_name}/",
         }],
-        ros_arguments=[
-            "--log-level",
-            log_level,
-        ],
+        # ros_arguments=[
+        #     "--log-level",
+        #     log_level,
+        # ],
     )
     actions.append(robot_state_publisher)
 
