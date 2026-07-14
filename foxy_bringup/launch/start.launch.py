@@ -39,7 +39,7 @@ def launch_setup(context) -> list[object]:
             "pos_z": LaunchConfiguration("sim/pos_z"),
             "world": LaunchConfiguration("sim/world"),
             "headless": LaunchConfiguration("sim/headless"),
-            "sim/camera_follow": LaunchConfiguration("sim/camera_follow"), # TODO
+            "view_follow": LaunchConfiguration("sim/view_follow"),
         }
     elif (system == "hw"):
         pkg = "foxy_bringup_hw"
@@ -171,8 +171,8 @@ def generate_launch_description() -> LaunchDescription:
             description="Run the simulator without a GUI"
         ),
         DeclareLaunchArgument(
-            name="sim/camera_follow",
-            default_value="true",
+            name="sim/view_follow",
+            default_value="false",
             choices=["true", "false"],
             description=(
                 "Make the simulator GUI camera follow the spawned drone."

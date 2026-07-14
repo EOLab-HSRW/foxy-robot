@@ -242,7 +242,6 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="view_follow",
-            default_value="true",
         ),
         DeclareLaunchArgument(
             name="enable/camera/front",

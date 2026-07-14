@@ -37,6 +37,7 @@ def launch_setup(context):
             "pos_x": "0.0",
             "pos_y": "0.0",
             "pos_z": "0.2",
+            "view_follow": LaunchConfiguration("view_follow"),
             "enable/camera/front": LaunchConfiguration("enable/camera/front"),
             "enable/tof/front": LaunchConfiguration("enable/tof/front"),
             "enable/imu/front": LaunchConfiguration("enable/imu/front"),
@@ -146,6 +147,9 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             "headless"
+        ),
+        DeclareLaunchArgument(
+            "view_follow"
         ),
         DeclareLaunchArgument(
             "enable/camera/front"
