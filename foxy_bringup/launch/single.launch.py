@@ -131,6 +131,7 @@ def launch_setup(context):
             package="controller_manager",
             executable="ros2_control_node",
             namespace=robot_name,
+            exec_name=f"{robot_name}.ros2_control_node",
             output="screen",
             parameters=[
                 controllers_config,
@@ -139,10 +140,7 @@ def launch_setup(context):
                 },
             ],
             remappings=[
-                (
-                    "~/robot_description",
-                    f"/{robot_name}/robot_description",
-                ),
+                ("~/robot_description", f"robot_description",),
             ],
         )
         # Note: in simulation (gz) the control manager
