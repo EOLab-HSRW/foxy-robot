@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>foxy_gz_plugins</name>
+  <version>0.3.0</version>
+  <description>Sensor-attached LED visual and light actuator system for Gazebo Harmonic.</description>
+
+  <maintainer email="harleynelsonlaraalonso1998@gmail.com">Harley Lara</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>gz-cmake3</build_depend>
+  <build_depend>gz-plugin2</build_depend>
+  <build_depend version_gte="8.14.0">gz-sim8</build_depend>
+  <build_depend>gz-sensors8</build_depend>
+  <build_depend>gz-transport13</build_depend>
+  <build_depend>gz-msgs10</build_depend>
+  <build_depend>gz-math7</build_depend>
+
+  <exec_depend version_gte="8.14.0">gz-sim8</exec_depend>
+  <exec_depend>gz-sensors8</exec_depend>
+  <exec_depend>gz-transport13</exec_depend>
+  <exec_depend>gz-msgs10</exec_depend>
+  <exec_depend>gz-math7</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

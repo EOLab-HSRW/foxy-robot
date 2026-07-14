@@ -1,0 +1,98 @@
+<?xml version="1.0" ?>
+<sdf version="1.10" xmlns:gz="http://gazebosim.org/schemas">
+  <world name="led_system_example">
+    <plugin
+      filename="gz-sim-scene-broadcaster-system"
+      name="gz::sim::systems::SceneBroadcaster"/>
+
+    <model name="foxy">
+      <static>true</static>
+      <pose>0 0 0.2 0 0 0</pose>
+
+      <link name="base_link">
+        <visual name="body_visual">
+          <geometry>
+            <box><size>0.6 0.4 0.12</size></box>
+          </geometry>
+          <material>
+            <ambient>0.1 0.1 0.1 1</ambient>
+            <diffuse>0.2 0.2 0.2 1</diffuse>
+          </material>
+        </visual>
+
+        <!--
+          The plugin is attached to a custom sensor. Each compact <led>
+          definition is converted by the plugin into one sphere visual and one
+          point light, both parented to base_link.
+        -->
+        <sensor name="leds" type="custom" gz:type="led">
+          <pose>0 0 0 0 0 0</pose>
+          <always_on>true</always_on>
+          <update_rate>0</update_rate>
+
+          <plugin
+            filename="foxy_gz_led_system"
+            name="foxy_gz_plugins::LedSystem">
+            <publish_state>true</publish_state>
+            <topic_prefix>/demo</topic_prefix>
+
+            <channel name="front_left">
+              <default_state><color>1 1 1 0</color></default_state>
+              <led name="front_left_led">
+                <pose>0.31 0.14 0.08 0 0 0</pose>
+                <radius>0.03</radius>
+                <color>1 1 1</color>
+                <range>2.0</range>
+                <gain>1.0</gain>
+              </led>
+            </channel>
+
+            <channel name="front_right">
+              <default_state><color>1 1 1 0</color></default_state>
+              <led name="front_right_led">
+                <pose>0.31 -0.14 0.08 0 0 0</pose>
+                <radius>0.03</radius>
+                <color>1 1 1</color>
+                <range>2.0</range>
+                <gain>1.0</gain>
+              </led>
+            </channel>
+
+            <channel name="rear_left">
+              <default_state><color>1 0 0 0</color></default_state>
+              <led name="rear_left_led">
+                <pose>-0.31 0.14 0.08 0 0 0</pose>
+                <radius>0.03</radius>
+                <color>1 0 0</color>
+                <range>2.0</range>
+                <gain>1.0</gain>
+              </led>
+            </channel>
+
+            <channel name="rear_right">
+              <default_state><color>1 0 0 0</color></default_state>
+              <led name="rear_right_led">
+                <pose>-0.31 -0.14 0.08 0 0 0</pose>
+                <radius>0.03</radius>
+                <color>1 0 0</color>
+                <range>2.0</range>
+                <gain>1.0</gain>
+              </led>
+            </channel>
+
+            <channel name="top">
+              <default_state><color>1 1 1 0</color></default_state>
+              <led name="top_led">
+                <pose>0 0 0.12 0 0 0</pose>
+                <radius>0.035</radius>
+                <color>1 1 1</color>
+                <range>3.0</range>
+                <gain>1.2</gain>
+              </led>
+            </channel>
+          </plugin>
+        </sensor>
+      </link>
+    </model>
+  </world>
+</sdf>
