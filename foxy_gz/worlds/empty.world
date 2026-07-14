@@ -19,6 +19,16 @@
       <ambient>0.4 0.4 0.4 1</ambient>
       <background>0.7 0.7 0.7 1</background>
       <shadows>true</shadows>
+      <sky>
+        <time>12</time>
+        <sunrise>6</sunrise>
+        <sunset>18</sunset>
+        <cloud_ambient>0.8 0.8 0.8 1</cloud_ambient>
+        <humidity>0.5</humidity>
+        <mean_size>0.5</mean_size>
+        <direction>0.1</direction>
+        <speed>12</speed>
+      </sky>
     </scene>
     <model name='ground_plane'>
       <static>true</static>
