@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<robot
+  xmlns:xacro="http://www.ros.org/wiki/xacro"
+  xmlns:gz="http://gazebosim.org/schemas">
+
+  <!--
+    Compact LED definition. The Gazebo plugin creates both the visual sphere
+    and point-light entity at runtime.
+  -->
+  <xacro:macro
+    name="foxy_led"
+    params="name pose radius color light_range gain:=1.0">
+    <led name="${name}">
+      <pose>${pose}</pose>
+      <radius>${radius}</radius>
+      <color>${color}</color>
+      <range>${light_range}</range>
+      <gain>${gain}</gain>
+    </led>
+  </xacro:macro>
+
+  <xacro:macro
+    name="foxy_leds"
+    params="name parent_link system topic_prefix:='' xyz:='0 0 0' rpy:='0 0 0'">
+    <xacro:if value="${system == 'gz'}">
+      <gazebo reference="${parent_link}">
+        <sensor name="${name}" type="custom" gz:type="led">
+          <pose>${xyz} ${rpy}</pose>
+          <always_on>true</always_on>
+          <update_rate>0</update_rate>
+
+          <plugin
+            filename="foxy_gz_led_system"
+            name="foxy_gz_plugins::LedSystem">
+            <publish_state>true</publish_state>
+
+            <xacro:if value="${topic_prefix != ''}">
+              <topic_prefix>${topic_prefix}</topic_prefix>
+            </xacro:if>
+
+            <channel name="front_left">
+              <default_state><color>1 1 1 0</color></default_state>
+              <xacro:foxy_led
+                name="front_left_led"
+                pose="0.089 0.025 0.030 0 0 0"
+                radius="0.0035"
+                color="1 1 1"
+                light_range="1.0"/>
+            </channel>
+
+            <channel name="front_right">
+              <default_state><color>1 1 1 0</color></default_state>
+              <xacro:foxy_led
+                name="front_right_led"
+                pose="0.089 -0.025 0.030 0 0 0"
+                radius="0.0035"
+                color="1 1 1"
+                light_range="1.0"/>
+            </channel>
+
+            <channel name="rear_left">
+              <default_state><color>1 0 0 0</color></default_state>
+              <xacro:foxy_led
+                name="rear_left_led"
+                pose="-0.090 0.037 0.021 0 0 0"
+                radius="0.0035"
+                color="1 1 1"
+                light_range="1.0"/>
+            </channel>
+
+            <channel name="rear_right">
+              <default_state><color>1 0 0 0</color></default_state>
+              <xacro:foxy_led
+                name="rear_right_led"
+                pose="-0.090 -0.037 0.021 0 0 0"
+                radius="0.0035"
+                color="1 1 1"
+                light_range="1.0"/>
+            </channel>
+
+            <channel name="top">
+              <default_state><color>0 0 1 0</color></default_state>
+              <xacro:foxy_led
+                name="top_led"
+                pose="0.050 0 0.083 0 0 0"
+                radius="0.0035"
+                color="1 1 1"
+                light_range="1.0"
+                gain="1.2"/>
+            </channel>
+          </plugin>
+        </sensor>
+      </gazebo>
+    </xacro:if>
+  </xacro:macro>
+</robot>

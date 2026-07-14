@@ -53,6 +53,7 @@ def launch_setup(context):
     enable_camera_front = arg_is_true(context, "enable/camera/front")
     enable_tof_front = arg_is_true(context, "enable/tof/front")
     enable_imu_front = arg_is_true(context, "enable/imu/front")
+    enable_leds = arg_is_true(context, "enable/leds")
 
     spawn_robot = Node(
         package="ros_gz_sim",
@@ -166,6 +167,59 @@ def launch_setup(context):
             )
         )
 
+    # Harley note: There is not need to play smart here
+    # so all the mapping is done directly
+    #
+    # Important: These mappings relay in consistency of name
+    # all the names define here need to match the <channel name="<here>">
+    # define under `foxy_description/sensors/leds.xacro`.
+    if enable_leds:
+        actions.append(
+            sensor_bridge(
+                robot_name=robot_name,
+                sensor_name="leds_bridge",
+                arguments=[
+                    # Gazebo -> ROS: current LED colors
+                    ( f"/model/{robot_name}/led/front_left/get"  "@std_msgs/msg/ColorRGBA" "[gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/front_right/get" "@std_msgs/msg/ColorRGBA" "[gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/rear_left/get"   "@std_msgs/msg/ColorRGBA" "[gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/rear_right/get"  "@std_msgs/msg/ColorRGBA" "[gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/top/get"         "@std_msgs/msg/ColorRGBA" "[gz.msgs.Color"),
+
+                    # ROS -> Gazebo: LED commands
+                    ( f"/model/{robot_name}/led/front_left/set"  "@std_msgs/msg/ColorRGBA" "]gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/front_right/set" "@std_msgs/msg/ColorRGBA" "]gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/rear_left/set"   "@std_msgs/msg/ColorRGBA" "]gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/rear_right/set"  "@std_msgs/msg/ColorRGBA" "]gz.msgs.Color"),
+                    ( f"/model/{robot_name}/led/top/set"         "@std_msgs/msg/ColorRGBA" "]gz.msgs.Color"),
+
+                    # ROS-facing topic names
+                    "--ros-args",
+                    "-r",
+                    ( f"/model/{robot_name}/led/front_left/get" f":=/{robot_name}/led/front_left/get"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/front_right/get" f":=/{robot_name}/led/front_right/get"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/rear_left/get" f":=/{robot_name}/led/rear_left/get"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/rear_right/get" f":=/{robot_name}/led/rear_right/get"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/top/get" f":=/{robot_name}/led/top/get"),
+
+                    "-r",
+                    ( f"/model/{robot_name}/led/front_left/set" f":=/{robot_name}/led/front_left/set"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/front_right/set" f":=/{robot_name}/led/front_right/set"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/rear_left/set" f":=/{robot_name}/led/rear_left/set"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/rear_right/set" f":=/{robot_name}/led/rear_right/set"),
+                    "-r",
+                    ( f"/model/{robot_name}/led/top/set" f":=/{robot_name}/led/top/set"),
+                ],
+            )
+        )
+
     return actions
 
 
@@ -198,6 +252,9 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="enable/imu/front",
+        ),
+        DeclareLaunchArgument(
+            name="enable/leds",
         ),
         OpaqueFunction(function=launch_setup)
     ])

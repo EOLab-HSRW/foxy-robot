@@ -41,6 +41,7 @@ def launch_setup(context):
     enable_camera_front = LaunchConfiguration("enable/camera/front").perform(context)
     enable_imu_front = LaunchConfiguration("enable/imu/front").perform(context)
     enable_tof_front = LaunchConfiguration("enable/tof/front").perform(context)
+    enable_leds = LaunchConfiguration("enable/leds").perform(context)
 
     mode = ""
 
@@ -94,6 +95,7 @@ def launch_setup(context):
                 "enable/camera/front": enable_camera_front,
                 "enable/imu/front": enable_imu_front,
                 "enable/tof/front": enable_tof_front,
+                "enable/leds": enable_leds,
             }
         ).toxml(),
         value_type=str,
@@ -215,6 +217,13 @@ def generate_launch_description() -> LaunchDescription:
             choices=["true", "false"],
             description=(
                 "Enable IMU. Hardware and simulation."
+            ),
+        ),
+        DeclareLaunchArgument(
+            name="enable/leds",
+            choices=["true", "false"],
+            description=(
+                "Enable LEDs. Hardware and simulation."
             ),
         ),
         OpaqueFunction(function=launch_setup)

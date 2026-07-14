@@ -40,6 +40,7 @@ def launch_setup(context):
             "enable/camera/front": LaunchConfiguration("enable/camera/front"),
             "enable/tof/front": LaunchConfiguration("enable/tof/front"),
             "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+            "enable/leds": LaunchConfiguration("enable/leds"),
         }.items()
     )
 
@@ -154,6 +155,9 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             "enable/imu/front"
+        ),
+        DeclareLaunchArgument(
+            "enable/leds"
         ),
         OpaqueFunction(function=launch_setup)
     ])

@@ -29,6 +29,7 @@ def launch_setup(context) -> list[object]:
         "enable/camera/front": LaunchConfiguration("enable/camera/front"),
         "enable/tof/front": LaunchConfiguration("enable/tof/front"),
         "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+        "enable/leds": LaunchConfiguration("enable/leds"),
     }
     if (system == "gz"):
         pkg = "foxy_bringup_sim"
@@ -74,6 +75,7 @@ def launch_setup(context) -> list[object]:
             "enable/camera/front": LaunchConfiguration("enable/camera/front"),
             "enable/tof/front": LaunchConfiguration("enable/tof/front"),
             "enable/imu/front": LaunchConfiguration("enable/imu/front"),
+            "enable/leds": LaunchConfiguration("enable/leds"),
             "verbose": verbose,
         }.items()
     )
@@ -120,6 +122,12 @@ def generate_launch_description() -> LaunchDescription:
             default_value="true",
             choices=["true", "false"],
             description="Enable imu."
+        ),
+        DeclareLaunchArgument(
+            name="enable/leds",
+            default_value="true",
+            choices=["true", "false"],
+            description="Enable LEDs."
         ),
         DeclareLaunchArgument(
             name="verbose",

@@ -1,5 +1,5 @@
 <robot name="robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  
+
   <!-- The following set of ARGUMENTS are used by launch -->
   <xacro:arg name="robot_name" default="default"/>
   <xacro:arg name="system" default="none"/>
@@ -13,34 +13,43 @@
   <xacro:arg name="enable/tof/front" default="true"/>
   <xacro:arg name="tof/front/name" default="tof_front"/>
 
+  <xacro:arg name="enable/leds" default="true"/>
+  <xacro:arg name="leds/topic_prefix" default=""/>
+
   <!-- set of properties for internal use (not used by launch) -->
   <xacro:property name="namespace" default="$(arg robot_name)"/>
   <xacro:property name="root_frame" default="base_link" />
   <xacro:property name="ros2_gz_before_renamed" value="${['humble', 'jazzy', 'kilted']}"/>
 
   <xacro:include filename="$(find foxy_description)/urdf/base.xacro"/>
-    <xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
-    <xacro:include filename="$(find foxy_description)/sensors/imu_generic.xacro"/>
-    <xacro:include filename="$(find foxy_description)/sensors/vl53l0x.xacro"/>
 
   <xacro:foxy_base root_frame="${root_frame}"/>
 
   <xacro:if value="$(arg enable/camera/front)">
+    <xacro:include filename="$(find foxy_description)/sensors/rgb_camera_generic.xacro"/>
     <xacro:rgb_camera_generic name="$(arg camera/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
       <origin xyz="0.08938 0 0.07209" rpy="0.0 ${radians(16.1)} 0" />
     </xacro:rgb_camera_generic>
   </xacro:if>
 
   <xacro:if value="$(arg enable/imu/front)">
+    <xacro:include filename="$(find foxy_description)/sensors/imu_generic.xacro"/>
     <xacro:imu_generic name="$(arg imu/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}">
       <origin xyz="0 0 0" rpy="0 0 0" />
     </xacro:imu_generic>
   </xacro:if>
 
   <xacro:if value="$(arg enable/tof/front)">
+    <xacro:include filename="$(find foxy_description)/sensors/vl53l0x.xacro"/>
     <xacro:vl53l0x name="$(arg tof/front/name)" parent_link="${root_frame}" namespace="${namespace}" system="${xacro.arg('system')}" visualize="true">
       <origin xyz="0.10678 0 0.037" rpy="0 0 0" />
     </xacro:vl53l0x>
+  </xacro:if>
+
+  <xacro:if value="$(arg enable/leds)">
+    <xacro:include filename="$(find foxy_description)/sensors/leds.xacro"/>
+    <xacro:foxy_leds name="leds" parent_link="${root_frame}" system="${xacro.arg('system')}" topic_prefix="$(arg leds/topic_prefix)" xyz="0 0 0" rpy="0 0 0">
+    </xacro:foxy_leds>
   </xacro:if>
 
   <xacro:if value="${xacro.arg('system') == 'gz' and '$(env ROS_DISTRO)' in ros2_gz_before_renamed}">
