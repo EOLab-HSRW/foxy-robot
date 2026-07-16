@@ -162,12 +162,18 @@ def launch_setup(context):
     )
     actions.append(diff_drive_controller)
 
-    battery_state_broadcaster = controller_spawner(
-        controller_name="battery_state_broadcaster",
-        robot_name=robot_name,
-        use_sim_time=use_sim_time
-    )
-    actions.append(battery_state_broadcaster)
+    if (system == "hw"):
+        # Note: Only load the battery_state_broadcaster
+        # for hardware.
+        # Gazebo offer a Linear Battery Plugint to emulate
+        # batteries. See https://gazebosim.org/api/sim/8/battery.html
+        # but we dont have the ros2 control hardware interface for it.
+        battery_state_broadcaster = controller_spawner(
+            controller_name="battery_state_broadcaster",
+            robot_name=robot_name,
+            use_sim_time=use_sim_time
+        )
+        actions.append(battery_state_broadcaster)
 
     return actions
 
