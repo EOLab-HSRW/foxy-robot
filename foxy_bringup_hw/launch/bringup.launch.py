@@ -131,7 +131,7 @@ def generate_launch_description():
             name="enable/imu/front",
         ),
         DeclareLaunchArgument(
-            name="enable/leds/front",
+            name="enable/leds",
         ),
         OpaqueFunction(function=launch_setup)
     ])
