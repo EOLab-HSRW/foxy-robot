@@ -1,7 +1,7 @@
 mkdir -p ~/foxy_ws/src
 cd ~/foxy_ws/src
 
-git clone https://github.com/EOLab-HSRW/foxy-robot.git
+git clone https://github.com/EOLab-HSRW/foxy-robot.git --depth 1
 
 cd ~/foxy_ws
 vcs import src --shallow < ~/foxy_ws/src/foxy-robot/hw.repos
