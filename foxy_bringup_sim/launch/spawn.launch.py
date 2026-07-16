@@ -111,18 +111,20 @@ def launch_setup(context):
     actions.append(spawn_robot)
 
     if enable_camera_front:
+        camera_name = "front"
+        camera_topic_prefix = f"/{robot_name}/camera/{camera_name}"
         actions.append(
             sensor_bridge(
                 robot_name=robot_name,
                 sensor_name="camera_front",
                 arguments=[
                     (
-                        f"/{robot_name}/camera_front/image"
+                        f"/{camera_topic_prefix}/image"
                         "@sensor_msgs/msg/Image"
                         "[gz.msgs.Image"
                     ),
                     (
-                        f"/{robot_name}/camera_front/camera_info"
+                        f"/{camera_topic_prefix}/camera_info"
                         "@sensor_msgs/msg/CameraInfo"
                         "[gz.msgs.CameraInfo"
                     ),
@@ -136,6 +138,24 @@ def launch_setup(context):
                 ],
             )
         )
+        actions.append(
+            Node(
+                package="ros_gz_image",
+                executable="image_bridge",
+                name="camera_front_image_bridge",
+                arguments=[
+                    f"{camera_topic_prefix}/image",
+                ],
+                parameters=[
+                    {
+                        "qos": "default",
+                        "lazy": False,
+
+                    }
+                ],
+                output="screen",
+            )
+        )
 
     if enable_tof_front:
         actions.append(
@@ -144,7 +164,7 @@ def launch_setup(context):
                 sensor_name="tof_front",
                 arguments=[
                     (
-                        f"/{robot_name}/tof_front/range"
+                        f"/{robot_name}/tof/front/range"
                         "@sensor_msgs/msg/LaserScan"
                         "[gz.msgs.LaserScan"
                     ),
@@ -159,7 +179,7 @@ def launch_setup(context):
                 sensor_name="imu_front",
                 arguments=[
                     (
-                        f"/{robot_name}/imu_front/imu"
+                        f"/{robot_name}/imu/front/imu"
                         "@sensor_msgs/msg/Imu"
                         "[gz.msgs.IMU"
                     ),

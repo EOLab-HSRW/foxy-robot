@@ -5,13 +5,13 @@
   <xacro:arg name="system" default="none"/>
 
   <xacro:arg name="enable/camera/front" default="true"/>
-  <xacro:arg name="camera/front/name" default="camera_front"/>
+  <xacro:arg name="camera/front/name" default="camera/front"/>
 
   <xacro:arg name="enable/imu/front" default="true"/>
-  <xacro:arg name="imu/front/name" default="imu_front"/>
+  <xacro:arg name="imu/front/name" default="imu/front"/>
 
   <xacro:arg name="enable/tof/front" default="true"/>
-  <xacro:arg name="tof/front/name" default="tof_front"/>
+  <xacro:arg name="tof/front/name" default="tof/front"/>
 
   <xacro:arg name="enable/leds" default="true"/>
   <xacro:arg name="leds/topic_prefix" default=""/>

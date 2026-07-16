@@ -76,7 +76,6 @@
       <inertial>
         <origin xyz="0 0 0" rpy="0 0 0"/>
         <mass value="0.003"/>
-
         <inertia
           ixx="5.85e-8"
           ixy="0.0"
