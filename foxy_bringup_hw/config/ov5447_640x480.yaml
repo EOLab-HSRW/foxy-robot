@@ -1,0 +1,68 @@
+# Waveshare RPi Camera (G), 640x480 output.
+#
+# This is intentionally an UNCALIBRATED placeholder.
+# K[0] == 0.0 is the ROS convention indicating that valid intrinsic
+# calibration data is not yet available.
+#
+# Replace this file with the result from calibrating the physical camera.
+# A calibration from another OV5647 module should not be assumed valid:
+# the wide-angle lens position and focus adjustment affect the intrinsics.
+image_width: 640
+image_height: 480
+camera_name: camera_front
+
+distortion_model: equidistant
+
+distortion_coefficients:
+  rows: 1
+  cols: 4
+  data:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+
+camera_matrix:
+  rows: 3
+  cols: 3
+  data:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+
+rectification_matrix:
+  rows: 3
+  cols: 3
+  data:
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 1.0
+
+projection_matrix:
+  rows: 3
+  cols: 4
+  data:
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0
+    - 0.0

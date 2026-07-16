@@ -26,6 +26,7 @@ def launch_setup(context) -> list[object]:
     common_arguments = {
         "robot_name": robot_name,
         "verbose": verbose,
+        "enable/button/top": LaunchConfiguration("enable/button/top"),
         "enable/camera/front": LaunchConfiguration("enable/camera/front"),
         "enable/tof/front": LaunchConfiguration("enable/tof/front"),
         "enable/imu/front": LaunchConfiguration("enable/imu/front"),
@@ -104,6 +105,12 @@ def generate_launch_description() -> LaunchDescription:
                 default_value="foxy"
             ),
             description="Name of the robot. This is use as namespace"
+        ),
+        DeclareLaunchArgument(
+            name="enable/button/top",
+            default_value="true",
+            choices=["true", "false"],
+            description="Enable button."
         ),
         DeclareLaunchArgument(
             name="enable/camera/front",

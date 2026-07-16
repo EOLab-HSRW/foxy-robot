@@ -14,6 +14,7 @@
   <exec_depend>foxy_bringup</exec_depend>
   <exec_depend>foxy_description</exec_depend>
   <exec_depend>foxy_hardware_interface</exec_depend>
+  <exec_depend>gscam</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
