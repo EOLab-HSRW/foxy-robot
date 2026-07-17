@@ -12,6 +12,7 @@ def launch_setup(context):
     robot_name = LaunchConfiguration("robot_name").perform(context)
     enable_button_top = get_bool("enable/button/top", context)
     enable_camera_front = get_bool("enable/camera/front", context)
+    enable_leds = get_bool("enable/leds", context)
 
     if enable_button_top:
         actions.append(
@@ -19,6 +20,15 @@ def launch_setup(context):
                 namespace=robot_name,
                 package="foxy_hardware_interface",
                 executable="button",
+            )
+        )
+
+    if enable_leds:
+        actions.append(
+            Node(
+                namespace=robot_name,
+                package="foxy_hardware_interface",
+                executable="leds",
             )
         )
 
