@@ -14,6 +14,9 @@ find_package(std_msgs REQUIRED)
 add_executable(button src/button.cpp)
 ament_target_dependencies(button rclcpp std_msgs)
 
+add_executable(leds src/leds.cpp)
+ament_target_dependencies(leds rclcpp std_msgs)
+
 add_library(foxy_hardware_interface SHARED
     src/motors_hardware.cpp
     src/battery_client.cpp
@@ -43,6 +46,7 @@ install(
 install(
   TARGETS
   button
+  leds
   DESTINATION lib/${PROJECT_NAME}
 )
 
