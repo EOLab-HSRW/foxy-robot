@@ -366,8 +366,7 @@ hardware_interface::return_type FoxyImuSensorHardware::read(
 
   for (std::size_t axis = 0; axis < 3U; ++axis) {
     angular_velocity_[axis] =
-      static_cast<double>(sample.gyro_rads[axis]) *
-      kDegreesToRadians;
+      static_cast<double>(sample.gyro_rads[axis]);
 
     linear_acceleration_[axis] =
       static_cast<double>(sample.accel_ms2[axis]);
