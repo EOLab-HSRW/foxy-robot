@@ -186,7 +186,7 @@
     <xacro:if value="$(arg enable/imu/front)">
       <ros2_control name="foxyimusensorhardware" type="sensor">
         <hardware>
-          <plugin>foxy_hardware_interface/foxyimusensorhardware</plugin>
+          <plugin>foxy_hardware_interface/FoxyImuSensorHardware</plugin>
           <!-- name of the peripheral in the foxy-drivers robot definition. -->
           <param name="resource_name">imu0</param>
         </hardware>
