@@ -9,6 +9,14 @@
     </description>
   </class>
   <class
+    name="foxy_hardware_interface/FoxyImuSensorHardware"
+    type="foxy_hardware_interface::FoxyImuSensorHardware"
+    base_class_type="hardware_interface::SensorInterface">
+    <description>
+      foxy-drivers IMU sensor component for imu_sensor_broadcaster.
+    </description>
+  </class>
+  <class
       name="foxy_hardware_interface/BatteryClientInterface"
       type="foxy_hardware_interface::BatteryClientInterface"
       base_class_type="hardware_interface::SystemInterface">

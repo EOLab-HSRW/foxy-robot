@@ -162,6 +162,13 @@ def launch_setup(context):
     )
     actions.append(diff_drive_controller)
 
+    imu_sensor_broadcaster = controller_spawner(
+        controller_name="imu_sensor_broadcaster",
+        robot_name=robot_name,
+        use_sim_time=use_sim_time
+    )
+    actions.append(imu_sensor_broadcaster)
+
     if (system == "hw"):
         # Note: Only load the battery_state_broadcaster
         # for hardware.

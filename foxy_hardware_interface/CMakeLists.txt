@@ -20,6 +20,7 @@ ament_target_dependencies(leds rclcpp std_msgs)
 add_library(foxy_hardware_interface SHARED
     src/motors_hardware.cpp
     src/battery_client.cpp
+    src/imu_sensor_hardware.cpp
 )
 
 target_include_directories(foxy_hardware_interface PUBLIC
