@@ -7,7 +7,7 @@ cd ~/foxy_ws
 vcs import src --shallow < ~/foxy_ws/src/foxy-robot/hw.repos
 
 # required for gscam
-sudo apt install --no-install-recommends \
+sudo apt install --no-install-recommends -y \
   libgstreamer1.0-dev \
   libgstreamer-plugins-base1.0-dev \
   gstreamer1.0-tools
@@ -17,7 +17,6 @@ sudo apt update
 rosdep update
 
 rosdep install \
-  --simulate \
   --from-paths src/gscam \
   --ignore-src
 
