@@ -1,3 +1,4 @@
+
 mkdir -p ~/foxy_ws/src
 cd ~/foxy_ws/src
 
@@ -14,6 +15,7 @@ sudo apt install --no-install-recommends -y \
 
 source /opt/ros/humble/setup.bash
 sudo apt update
+sudo apt install --only-upgrade foxy-drivers
 rosdep update
 
 rosdep install \
