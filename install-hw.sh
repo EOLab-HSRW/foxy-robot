@@ -14,6 +14,7 @@ sudo apt install --no-install-recommends \
 
 source /opt/ros/humble/setup.bash
 sudo apt update
+rosdep update
 
 rosdep install \
   --simulate \
