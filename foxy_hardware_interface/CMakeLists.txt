@@ -10,12 +10,16 @@ find_package(rclcpp REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 add_executable(button src/button.cpp)
 ament_target_dependencies(button rclcpp std_msgs)
 
 add_executable(leds src/leds.cpp)
 ament_target_dependencies(leds rclcpp std_msgs)
+
+add_executable(tof src/tof.cpp)
+ament_target_dependencies(tof rclcpp sensor_msgs)
 
 add_library(foxy_hardware_interface SHARED
     src/motors_hardware.cpp
@@ -48,6 +52,7 @@ install(
   TARGETS
   button
   leds
+  tof
   DESTINATION lib/${PROJECT_NAME}
 )
 

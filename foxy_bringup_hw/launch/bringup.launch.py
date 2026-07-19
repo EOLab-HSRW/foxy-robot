@@ -12,6 +12,7 @@ def launch_setup(context):
     robot_name = LaunchConfiguration("robot_name").perform(context)
     enable_button_top = get_bool("enable/button/top", context)
     enable_camera_front = get_bool("enable/camera/front", context)
+    enable_tof_front = get_bool("enable/tof/front", context)
     enable_leds = get_bool("enable/leds", context)
 
     if enable_button_top:
@@ -29,6 +30,27 @@ def launch_setup(context):
                 namespace=robot_name,
                 package="foxy_hardware_interface",
                 executable="leds",
+            )
+        )
+
+    if enable_tof_front:
+        actions.append(
+            Node(
+                name="tof_front",
+                namespace=robot_name,
+                package="foxy_hardware_interface",
+                executable="tof",
+                output="screen",
+                parameters=[
+                    {
+                        "sensor_name": "tof0",
+                        "frame_id": "tof/front_link",
+                        "topic_name": "tof/front/range",
+                        "publish_rate": 30.0,
+                        "range_min": 0.03,
+                        "range_max": 2.0,
+                    }
+                ],
             )
         )
 
