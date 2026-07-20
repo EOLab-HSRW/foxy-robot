@@ -510,7 +510,7 @@ prepare_workspace() {
 
     run_with_spinner \
       "Importing Humble simulation source dependencies" \
-      vcs import "${WORKSPACE}/src" --shallow --skip-existing < "$repos_file"
+      vcs import "${WORKSPACE}/src" --skip-existing < "$repos_file"
   fi
 }
 
