@@ -1,3 +1,7 @@
+import os
+import re
+import socket
+
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
@@ -15,6 +19,29 @@ from launch.substitutions import (
 from launch_ros.substitutions import FindPackageShare
 
 from ament_index_python.packages import PackageNotFoundError
+
+def sanitize_ros_namespace(value: str) -> str:
+    """Convert a string into a valid single-token ROS 2 namespace."""
+    namespace = value.strip().lower()
+
+    # Requested conversion.
+    namespace = namespace.replace("-", "_")
+
+    # Replace dots, spaces, and any other unsupported characters.
+    namespace = re.sub(r"[^a-z0-9_]", "_", namespace)
+
+    # Avoid repeated underscores and empty edge characters.
+    namespace = re.sub(r"_+", "_", namespace).strip("_")
+
+    # Ensure the namespace is non-empty.
+    if not namespace:
+        namespace = "host"
+
+    # ROS name tokens must not begin with a number.
+    if namespace[0].isdigit():
+        namespace = f"host_{namespace}"
+
+    return namespace
 
 def launch_setup(context) -> list[object]:
     system = LaunchConfiguration("system").perform(context)
@@ -88,6 +115,8 @@ def launch_setup(context) -> list[object]:
 
 def generate_launch_description() -> LaunchDescription:
 
+    default_name = os.environ.get("FOXY_NAME") or sanitize_ros_namespace(socket.gethostname())
+
     return LaunchDescription([
         DeclareLaunchArgument(
             name="system",
@@ -100,10 +129,7 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="robot_name",
-            default_value=EnvironmentVariable(
-                "FOXY_NAME",
-                default_value="foxy"
-            ),
+            default_value=default_name,
             description="Name of the robot. This is use as namespace"
         ),
         DeclareLaunchArgument(
