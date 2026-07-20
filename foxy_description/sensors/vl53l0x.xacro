@@ -69,8 +69,6 @@
               <stddev>${noise_stddev}</stddev>
             </noise>
           </ray>
-          <frame_id>${namespace}/${name}_link</frame_id>
-          <gz_frame_id>${namespace}/${name}_link</gz_frame_id>
         </sensor>
       </gazebo>
     </xacro:if>
