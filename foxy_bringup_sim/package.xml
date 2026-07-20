@@ -9,10 +9,13 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- Foxy packages -->
   <exec_depend>foxy_bringup</exec_depend>
   <exec_depend>foxy_description</exec_depend>
+  <exec_depend>foxy_gz</exec_depend>
   <exec_depend>foxy_gz_plugins</exec_depend>
 
+  <!-- ROS2 general packages -->
   <exec_depend>rviz2</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
 
