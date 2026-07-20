@@ -51,7 +51,7 @@
     odom_frame_id: odom
     base_frame_id: base_link
     pose_covariance_diagonal : [0.001, 0.001, 0.0, 0.0, 0.0, 0.01]
-    twist_covariance_diagonal: [0.001, 0.0, 0.0, 0.0, 0.0, 0.01]
+    twist_covariance_diagonal: [0.001, 0.001, 0.0, 0.0, 0.0, 0.01]
 
     open_loop: false
     # robot_localization becomes the only odom -> base_link publisher.
