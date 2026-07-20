@@ -250,6 +250,7 @@ f"""
 
         localization_parameters = {
             "use_sim_time": use_sim_time,
+             "reset_on_time_jump": True,
 
             # Multi-robot TF frames.
             "odom_frame": f"{robot_name}/odom",

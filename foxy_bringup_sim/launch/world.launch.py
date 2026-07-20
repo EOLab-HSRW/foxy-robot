@@ -5,6 +5,7 @@ from launch.actions import DeclareLaunchArgument, ExecuteProcess, IncludeLaunchD
 from launch.conditions import UnlessCondition
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.actions import Node
 
 def launch_setup(context):
 
@@ -71,11 +72,22 @@ def launch_setup(context):
         condition=UnlessCondition(LaunchConfiguration("headless"))
     )
 
+    clock_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        name="clock_bridge",
+        arguments=[
+            "/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock",
+        ],
+        output="screen",
+    )
+
 
     return [
         set_server_config,
         start_gz_server,
-        start_gz_gui
+        start_gz_gui,
+        clock_bridge,
     ]
 
 
