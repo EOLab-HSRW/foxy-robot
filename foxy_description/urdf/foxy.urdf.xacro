@@ -8,7 +8,7 @@
   <xacro:arg name="camera/front/name" default="camera/front"/>
 
   <xacro:arg name="enable/imu/front" default="true"/>
-  <xacro:arg name="imu/front/name" default="imu/front"/>
+  <xacro:arg name="imu/front/name" default="imu_front"/>
 
   <xacro:arg name="enable/tof/front" default="true"/>
   <xacro:arg name="tof/front/name" default="tof/front"/>
@@ -75,8 +75,8 @@
         <state_interface name="velocity"/>
       </joint>
 
-      <xacro:if value="$(arg enable/imu)">
-        <sensor name="imu/front">
+      <xacro:if value="$(arg enable/imu/front)">
+        <sensor name="imu_front">
           <state_interface name="orientation.x"/>
           <state_interface name="orientation.y"/>
           <state_interface name="orientation.z"/>
@@ -182,28 +182,6 @@
       <command_interface name="shutdown"/>
     </gpio>
   </ros2_control>
-
-    <xacro:if value="$(arg enable/imu/front)">
-      <ros2_control name="foxyimusensorhardware" type="sensor">
-        <hardware>
-          <plugin>foxy_hardware_interface/FoxyImuSensorHardware</plugin>
-          <!-- name of the peripheral in the foxy-drivers robot definition. -->
-          <param name="resource_name">imu0</param>
-        </hardware>
-        <sensor name="imu_front">
-          <state_interface name="orientation.x"/>
-          <state_interface name="orientation.y"/>
-          <state_interface name="orientation.z"/>
-          <state_interface name="orientation.w"/>
-          <state_interface name="angular_velocity.x"/>
-          <state_interface name="angular_velocity.y"/>
-          <state_interface name="angular_velocity.z"/>
-          <state_interface name="linear_acceleration.x"/>
-          <state_interface name="linear_acceleration.y"/>
-          <state_interface name="linear_acceleration.z"/>
-        </sensor>
-      </ros2_control>
-    </xacro:if>
 
 
   </xacro:if>

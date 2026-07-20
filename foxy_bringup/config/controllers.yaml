@@ -14,10 +14,9 @@
     diff_drive_base_controller:
       type: diff_drive_controller/DiffDriveController
 
-/**/imu_sensor_broadcaster:
-  ros__parameters:
-    sensor_name: imu_front
-    frame_id: imu_link
+# the imu_sensor_broadcaster config
+# is contructed dynamically at runtime
+# inside the foxy_bringup/launch/single.launch.py file
 
 /**/battery_state_broadcaster:
   ros__parameters:
@@ -45,17 +44,18 @@
     left_wheel_radius_multiplier: 1.0
     right_wheel_radius_multiplier: 1.0
 
-    tf_frame_prefix_enable: false
-    # tf_frame_prefix: "prefix"
+    tf_frame_prefix_enable: true
+    tf_frame_prefix: "" # Empty means: use the controller's namespace.
+
     publish_rate: 50.0
     odom_frame_id: odom
     base_frame_id: base_link
     pose_covariance_diagonal : [0.001, 0.001, 0.0, 0.0, 0.0, 0.01]
     twist_covariance_diagonal: [0.001, 0.0, 0.0, 0.0, 0.0, 0.01]
 
-
     open_loop: false
-    enable_odom_tf: true
+    # robot_localization becomes the only odom -> base_link publisher.
+    enable_odom_tf: false
 
     cmd_vel_timeout: 0.5
     # publish_limited_velocity: true

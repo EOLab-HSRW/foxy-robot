@@ -172,21 +172,6 @@ def launch_setup(context):
             )
         )
 
-    if enable_imu_front:
-        actions.append(
-            sensor_bridge(
-                robot_name=robot_name,
-                sensor_name="imu_front",
-                arguments=[
-                    (
-                        f"/{robot_name}/imu/front/imu"
-                        "@sensor_msgs/msg/Imu"
-                        "[gz.msgs.IMU"
-                    ),
-                ],
-            )
-        )
-
     # Harley note: There is not need to play smart here
     # so all the mapping is done directly
     #

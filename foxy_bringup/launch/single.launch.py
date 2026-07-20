@@ -1,3 +1,7 @@
+from pathlib import Path
+from tempfile import gettempdir
+
+
 from launch_ros.actions import Node
 import xacro
 
@@ -162,12 +166,125 @@ def launch_setup(context):
     )
     actions.append(diff_drive_controller)
 
-    imu_sensor_broadcaster = controller_spawner(
-        controller_name="imu_sensor_broadcaster",
-        robot_name=robot_name,
-        use_sim_time=use_sim_time
-    )
-    actions.append(imu_sensor_broadcaster)
+    if enable_imu_front == "true":
+        imu_frame_id = f"{robot_name}/imu_front_link"
+        # imu_sensor_broadcaster parameters must be resolved before the
+        # lifecycle controller is configured.
+        imu_params_file = (
+            Path(gettempdir())
+                / f"foxy_{robot_name}_imu_sensor_broadcaster.yaml"
+        )
+
+        imu_params_file.write_text(
+f"""
+/**/imu_sensor_broadcaster:
+    ros__parameters:
+        sensor_name: imu_front
+        frame_id: {imu_frame_id}
+        static_covariance_orientation: [-1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+""")
+
+        imu_sensor_broadcaster = Node(
+            package="controller_manager",
+            executable="spawner",
+            namespace=robot_name,
+            name="spawn_imu_sensor_broadcaster",
+            output="screen",
+            parameters=[{
+                "use_sim_time": use_sim_time,
+            }],
+            arguments=[
+                "imu_sensor_broadcaster",
+                "--controller-manager",
+                f"/{robot_name}/controller_manager",
+                "--controller-manager-timeout",
+                "60.0",
+                "--param-file",
+                str(imu_params_file),
+            ],
+        )
+        actions.append(imu_sensor_broadcaster)
+
+        # Raw input: /<robot_name>/imu_sensor_broadcaster/imu
+        # Filtered output: /<robot_name>/imu_sensor_broadcaster/imu/filtered
+        imu_filter_madgwick = Node(
+            package="imu_filter_madgwick",
+            executable="imu_filter_madgwick_node",
+            namespace=f"{robot_name}/imu_sensor_broadcaster",
+            name="madgwick_filter",
+            exec_name=f"{robot_name}.imu_filter_madgwick",
+            output="screen",
+            parameters=[{
+                "use_sim_time": use_sim_time,
+                "use_mag": False,
+                "publish_tf": False,
+                "world_frame": "enu",
+                "remove_gravity_vector": False,
+            }],
+            remappings=[
+                ("imu/data_raw", "imu"),
+                ("imu/data", "imu/filtered"),
+            ],
+        )
+        actions.append(imu_filter_madgwick)
+
+        # -------------------------------------------------------------------------
+        # Local state estimation
+        #
+        # Inputs:
+        #   /<robot_name>/diff_drive_base_controller/odom
+        #   /<robot_name>/imu_sensor_broadcaster/imu/filtered
+        #
+        # Output:
+        #   /<robot_name>/odometry/filtered
+        #
+        # TF:
+        #   <robot_name>/odom -> <robot_name>/base_link
+        # -------------------------------------------------------------------------
+
+        localization_config = PathJoinSubstitution([
+            FindPackageShare("foxy_bringup"),
+            "config",
+            "localization.yaml",
+        ])
+
+        localization_parameters = {
+            "use_sim_time": use_sim_time,
+
+            # Multi-robot TF frames.
+            "odom_frame": f"{robot_name}/odom",
+            "base_link_frame": f"{robot_name}/base_link",
+            "world_frame": f"{robot_name}/odom",
+
+            # Wheel odometry is always available.
+            "odom0": (
+                f"/{robot_name}/"
+                "diff_drive_base_controller/odom"
+            ),
+        }
+
+
+        # Allow the EKF to continue operating as wheel-only odometry when the
+        # front IMU is disabled.
+        if enable_imu_front == "true":
+            localization_parameters["imu0"] = (
+                f"/{robot_name}/"
+                "imu_sensor_broadcaster/imu/filtered"
+            )
+
+        ekf_node = Node(
+            package="robot_localization",
+            executable="ekf_node",
+            namespace=robot_name,
+            name="ekf_node",
+            exec_name=f"{robot_name}.ekf_node",
+            output="screen",
+            parameters=[
+                localization_config,
+                localization_parameters,
+            ],
+        )
+        actions.append(ekf_node)
 
     if (system == "hw"):
         # Note: Only load the battery_state_broadcaster
