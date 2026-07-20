@@ -11,6 +11,7 @@ vcs import src --shallow < ~/foxy_ws/src/foxy-robot/hw.repos
 sudo apt install --no-install-recommends -y \
   libgstreamer1.0-dev \
   libgstreamer-plugins-base1.0-dev \
+  gstreamer1.0-plugins-good \
   gstreamer1.0-tools
 
 source /opt/ros/humble/setup.bash
