@@ -18,6 +18,8 @@
   <!-- ROS2 general packages -->
   <exec_depend>rviz2</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>image_transport</exec_depend>
+  <exec_depend>image_transport_plugins</exec_depend>
 
   <!-- Gazebo dependencies -->
   <exec_depend>gz-harmonic</exec_depend>
