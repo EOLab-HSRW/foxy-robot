@@ -28,24 +28,20 @@ else
   C_RED=""
 fi
 
-
 info()    { printf '%s[INFO]%s %s\n' "$C_BLUE" "$C_RESET" "$*"; }
 success() { printf '%s[ OK ]%s %s\n' "$C_GREEN" "$C_RESET" "$*"; }
 warn()    { printf '%s[WARN]%s %s\n' "$C_YELLOW" "$C_RESET" "$*" >&2; }
 error()   { printf '%s[FAIL]%s %s\n' "$C_RED" "$C_RESET" "$*" >&2; }
 die()     { error "$*"; exit 1; }
 
-
 section() {
   printf '\n%s==> %s%s\n\n' "$C_BLUE" "$*" "$C_RESET"
 }
 
 ACTIVE_COMMAND_PID=""
-
 ACTIVE_SPINNER_PID=""
 ACTIVE_OPERATION_LOG=""
 ERROR_ALREADY_REPORTED=0
-
 
 cleanup_active_operation() {
   if [[ -n "${ACTIVE_COMMAND_PID:-}" ]]; then
@@ -53,7 +49,6 @@ cleanup_active_operation() {
     wait "$ACTIVE_COMMAND_PID" 2>/dev/null || true
     ACTIVE_COMMAND_PID=""
   fi
-
 
   if [[ -n "${ACTIVE_SPINNER_PID:-}" ]]; then
 
@@ -63,7 +58,6 @@ cleanup_active_operation() {
   fi
 
   if [[ -n "${ACTIVE_OPERATION_LOG:-}" ]]; then
-
     rm -f "$ACTIVE_OPERATION_LOG"
     ACTIVE_OPERATION_LOG=""
   fi
@@ -120,6 +114,7 @@ run_with_spinner() {
   ) >"$log_file" 2>&1 &
 
   command_pid=$!
+
   ACTIVE_COMMAND_PID="$command_pid"
 
   # The child now owns its duplicate of this descriptor.
@@ -142,13 +137,11 @@ run_with_spinner() {
   ) &
 
   spinner_pid=$!
-
   ACTIVE_SPINNER_PID="$spinner_pid"
 
   if wait "$command_pid"; then
     exit_code=0
   else
-
     exit_code=$?
   fi
   ACTIVE_COMMAND_PID=""
@@ -173,6 +166,7 @@ run_with_spinner() {
     "$C_RED" "$C_RESET" "$message" >&2
 
   printf '\n%s--- Output ---%s\n' \
+
     "$C_RED" "$C_RESET" >&2
   cat "$log_file" >&2
 
@@ -186,16 +180,17 @@ run_with_spinner() {
 }
 
 on_error() {
-
   local exit_code=$?
   local line_no=$1
 
   if (( ERROR_ALREADY_REPORTED )); then
+
     exit "$exit_code"
   fi
 
   error "Command failed at line ${line_no} (exit ${exit_code})."
   exit "$exit_code"
+
 }
 trap 'on_error "$LINENO"' ERR
 trap cleanup_active_operation EXIT
@@ -235,6 +230,7 @@ confirm_phrase() {
   [[ "$answer" == "$phrase" ]]
 }
 
+
 if (( EUID == 0 )); then
   die "Run this installer as your normal user, not with sudo. It invokes sudo only for system changes."
 fi
@@ -247,10 +243,12 @@ source /etc/os-release
 OS_ID="${ID:-unknown}"
 OS_VERSION="${VERSION_ID:-unknown}"
 OS_CODENAME="${UBUNTU_CODENAME:-${VERSION_CODENAME:-unknown}}"
+
 ROS_DISTRO_SELECTED=""
 
 detect_ros_distribution() {
   local has_humble=false
+
   local has_jazzy=false
 
   [[ -f /opt/ros/humble/setup.bash ]] && has_humble=true
@@ -277,6 +275,7 @@ expected_ros_for_host() {
     22.04) printf 'humble\n' ;;
     24.04) printf 'jazzy\n' ;;
     *) return 1 ;;
+
   esac
 }
 
@@ -287,14 +286,12 @@ install_ros2_from_debs() {
 
   section "ROS 2 ${distro^}"
 
-
   run_with_spinner \
     "Updating package lists before installing ROS 2" \
     sudo apt-get update
 
   run_with_spinner \
     "Installing ROS 2 repository prerequisites" \
-
     sudo apt-get install -y locales software-properties-common curl ca-certificates
 
   if ! locale charmap 2>/dev/null | grep -qi 'UTF-8'; then
@@ -302,13 +299,11 @@ install_ros2_from_debs() {
       "Generating the UTF-8 locale" \
       sudo locale-gen en_US en_US.UTF-8
 
-
     run_with_spinner \
       "Selecting the UTF-8 locale" \
       sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
 
     export LANG=en_US.UTF-8
-
   fi
 
   run_with_spinner \
@@ -346,6 +341,7 @@ install_ros2_from_debs() {
     sudo apt-get install -y "ros-${distro}-desktop" ros-dev-tools
 
   [[ -f "/opt/ros/${distro}/setup.bash" ]] ||
+
     die "ROS 2 installation finished, but /opt/ros/${distro}/setup.bash is missing."
 
 }
@@ -368,7 +364,6 @@ install_common_tools() {
     python3-rosdep \
     python3-vcstool
 }
-
 
 initialize_rosdep() {
   if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
@@ -396,9 +391,7 @@ configure_gazebo_repository() {
 
   # The project directly declares the rosdep key "gz-harmonic".
   sudo install -d -m 0755 /etc/ros/rosdep/sources.list.d
-
   sudo curl -fsSL \
-
     --output /etc/ros/rosdep/sources.list.d/00-gazebo.list \
     https://raw.githubusercontent.com/osrf/osrf-rosdep/master/gz/00-gazebo.list
 
@@ -445,6 +438,7 @@ remove_humble_fortress_conflicts() {
   local -a removal_plan=()
 
   mapfile -t conflicts < <(find_humble_fortress_conflicts | sort -u)
+
   (( ${#conflicts[@]} > 0 )) || {
     info "No installed Gazebo Fortress / Ignition conflicts were detected."
     return 0
@@ -454,6 +448,7 @@ remove_humble_fortress_conflicts() {
   printf '  - %s\n' "${conflicts[@]}" >&2
 
   mapfile -t removal_plan < <(
+
     apt-get -s remove "${conflicts[@]}" 2>/dev/null |
 
       awk '/^Remv / { print $2 }' |
@@ -487,7 +482,6 @@ EOF
 install_harmonic_for_humble() {
   section "Gazebo Harmonic"
 
-
   remove_humble_fortress_conflicts
   run_with_spinner \
     "Installing Gazebo Harmonic and its ROS 2 Humble integration" \
@@ -502,7 +496,6 @@ prepare_workspace() {
 
   if [[ -d "${REPO_DIR}/.git" ]]; then
     info "Using the existing repository checkout at ${REPO_DIR}."
-
   elif [[ -e "$REPO_DIR" ]]; then
     die "${REPO_DIR} exists but is not a Git checkout. Move it aside or remove it first."
   else
@@ -510,7 +503,6 @@ prepare_workspace() {
       "Cloning the foxy-robot repository" \
       git clone "$REPO_URL" "$REPO_DIR" --depth 1
   fi
-
 
   if [[ "$ROS_DISTRO_SELECTED" == "humble" ]]; then
     local repos_file="${REPO_DIR}/sim.humble.repos"
@@ -526,13 +518,11 @@ handle_workspace_distro_change() {
   local marker="${WORKSPACE}/.foxy_sim_ros_distro"
   local previous=""
 
-
   if [[ -f "$marker" ]]; then
     IFS= read -r previous < "$marker" || true
   fi
 
   if [[ -n "$previous" && "$previous" != "$ROS_DISTRO_SELECTED" ]]; then
-
     warn "This workspace was previously built for ROS 2 ${previous^}."
     if ask_yes_no "Remove its build, install, and log directories before continuing?"; then
       rm -rf "${WORKSPACE}/build" "${WORKSPACE}/install" "${WORKSPACE}/log"
@@ -548,9 +538,12 @@ build_simulation_workspace() {
 
   section "Simulation dependencies and build"
 
+  # ROS setup scripts may read variables before defining them, which is
+  # incompatible with this installer's global `set -u`.
+  set +u
   # shellcheck disable=SC1090
   source "/opt/ros/${ROS_DISTRO_SELECTED}/setup.bash"
-
+  set -u
 
   if [[ "$ROS_DISTRO_SELECTED" == "humble" ]]; then
     export GZ_VERSION=harmonic
@@ -580,7 +573,6 @@ build_simulation_workspace() {
     run_with_spinner \
       "Installing Jazzy simulation dependencies with rosdep" \
       rosdep install \
-
       -r \
       -y \
       --from-paths "${sim_paths[@]}" \
@@ -599,16 +591,19 @@ build_simulation_workspace() {
   # This validates the result inside the installer process. The caller still
   # needs to source this file in its own shell after the script exits.
 
+  set +u
   # shellcheck disable=SC1091
   source "${WORKSPACE}/install/setup.bash"
+  set -u
   ros2 pkg prefix foxy_bringup_sim > /dev/null
 
   popd > /dev/null
 }
 
-
 main() {
+
   local expected_ros=""
+
 
   if [[ "${1:-}" == "--version" ]]; then
     printf 'Foxy robot simulation installer %s\n' "$SCRIPT_VERSION"
@@ -623,9 +618,11 @@ main() {
 
   if [[ -z "$ROS_DISTRO_SELECTED" ]]; then
     expected_ros="$(expected_ros_for_host)" ||
+
       die "No supported ROS 2 installation was found. Automatic installation supports only Ubuntu 22.04 or Ubuntu 24.04."
 
     cat <<EOF
+
 
 ROS 2 was not found in /opt/ros/humble or /opt/ros/jazzy.
 At least, it is not installed using the expected Debian package layout.
@@ -639,11 +636,11 @@ EOF
 
     if ! ask_yes_no "Would you like to install ROS 2?"; then
       info "ROS 2 installation declined."
-
       exit 0
     fi
 
     sudo -v
+
     install_ros2_from_debs "$expected_ros"
     ROS_DISTRO_SELECTED="$expected_ros"
   else
@@ -651,16 +648,17 @@ EOF
   fi
 
   expected_ros="$(expected_ros_for_host)" ||
+
     die "This installer supports Ubuntu 22.04 and Ubuntu 24.04 only."
 
   if [[ "$ROS_DISTRO_SELECTED" != "$expected_ros" ]]; then
     die "ROS 2 ${ROS_DISTRO_SELECTED^} was selected, but Ubuntu ${OS_VERSION} requires ROS 2 ${expected_ros^} for this installer."
-
   fi
 
   install_common_tools
   initialize_rosdep
   configure_gazebo_repository
+
 
   if [[ "$ROS_DISTRO_SELECTED" == "humble" ]]; then
     install_harmonic_for_humble
@@ -676,6 +674,7 @@ ${C_GREEN}Installation complete.${C_RESET}
 
 ROS distribution: ${ROS_DISTRO_SELECTED}
 Workspace:        ${WORKSPACE}
+
 
 Load the workspace in the current terminal with:
 
