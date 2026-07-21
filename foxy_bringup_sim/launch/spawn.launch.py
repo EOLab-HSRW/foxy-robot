@@ -112,7 +112,7 @@ def launch_setup(context):
 
     if enable_camera_front:
         camera_name = "front"
-        camera_topic_prefix = f"/{robot_name}/camera/{camera_name}"
+        camera_topic_prefix = f"/{robot_name}/camera_{camera_name}"
         actions.append(
             sensor_bridge(
                 robot_name=robot_name,
