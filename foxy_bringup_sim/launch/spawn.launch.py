@@ -112,19 +112,21 @@ def launch_setup(context):
 
     if enable_camera_front:
         camera_name = "front"
-        camera_topic_prefix = f"/{robot_name}/camera_{camera_name}"
+        camera_topic_prefix = (
+            f"/{robot_name}/camera_{camera_name}"
+        )
+
+        # Bridge only CameraInfo through parameter_bridge.
+        #
+        # Do not also bridge the Image here. ros_gz_image owns the
+        # Gazebo Image -> ROS image_transport pipeline.
         actions.append(
             sensor_bridge(
                 robot_name=robot_name,
-                sensor_name="camera_front",
+                sensor_name="camera_front_info",
                 arguments=[
                     (
-                        f"/{camera_topic_prefix}/image"
-                        "@sensor_msgs/msg/Image"
-                        "[gz.msgs.Image"
-                    ),
-                    (
-                        f"/{camera_topic_prefix}/camera_info"
+                        f"{camera_topic_prefix}/camera_info"
                         "@sensor_msgs/msg/CameraInfo"
                         "[gz.msgs.CameraInfo"
                     ),
@@ -132,12 +134,24 @@ def launch_setup(context):
                 parameters=[
                     {
                         "override_frame_id": (
-                            f"{robot_name}/camera_front_optical_frame"
+                            f"{robot_name}/"
+                            "camera_front_optical_frame"
                         ),
                     },
                 ],
             )
         )
+
+        # Humble ros_gz_image takes Gazebo image topic names as
+        # positional arguments.
+        #
+        # It publishes:
+        #
+        # /computer/camera_front/image
+        # /computer/camera_front/image/compressed
+        # /computer/camera_front/image/theora
+        #
+        # depending on the installed image_transport plugins.
         actions.append(
             Node(
                 package="ros_gz_image",
@@ -145,13 +159,6 @@ def launch_setup(context):
                 name="camera_front_image_bridge",
                 arguments=[
                     f"{camera_topic_prefix}/image",
-                ],
-                parameters=[
-                    {
-                        "qos": "default",
-                        "lazy": False,
-
-                    }
                 ],
                 output="screen",
             )
