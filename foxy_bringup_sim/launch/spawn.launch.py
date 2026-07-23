@@ -100,7 +100,7 @@ def launch_setup(context):
                     target_action=spawn_robot,
                     on_exit=[
                         TimerAction(
-                            period=1.0,
+                            period=7.0,
                             actions=[follow_robot],
                         ),
                     ],
