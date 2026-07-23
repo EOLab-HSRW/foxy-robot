@@ -65,7 +65,8 @@ def launch_setup(context) -> list[object]:
             "pos_x": LaunchConfiguration("sim/pos_x"),
             "pos_y": LaunchConfiguration("sim/pos_y"),
             "pos_z": LaunchConfiguration("sim/pos_z"),
-            "world": LaunchConfiguration("sim/world"),
+            "world_name": LaunchConfiguration("sim/world_name"),
+            "world_path": LaunchConfiguration("sim/world_path"),
             "headless": LaunchConfiguration("sim/headless"),
             "view_follow": LaunchConfiguration("sim/view_follow"),
         }
@@ -180,21 +181,37 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="sim/pos_z",
-            default_value="0.8",
+            default_value="0.2",
             description="Robot spawn Z position.",
         ),
         DeclareLaunchArgument(
-            name="sim/world",
+            name="sim/world_name",
             default_value="small_loop",
-            choices=[
-                "empty",
-                "small_loop",
-                "small_map",
-                "large_map",
-                "straight_lane"
-            ],
             description=(
-                "Simulation world name without the '.sdf' extension."
+                "Runtime name of the Gazebo world to target. This value must match "
+                    "the 'name' attribute of the <world> element in the selected SDF "
+                    "file, for example: <world name='small_loop'>. "
+                    "Gazebo services used to spawn and control entities are scoped by "
+                    "this name, such as '/world/small_loop/create'. The world name is "
+                    "independent of the SDF filename and therefore cannot reliably be "
+                    "derived from sim/world_path."
+            ),
+            # this are available for demo and testing
+            # choices=[
+            #     "empty",
+            #     "small_loop",
+            #     "small_map",
+            #     "large_map",
+            #     "straight_lane"
+            # ],
+        ),
+        DeclareLaunchArgument(
+            name="sim/world_path",
+            default_value="",
+            description=(
+                "Absolute path to the SDF world file to load. This selects the file "
+                    "but does not identify the runtime world inside it. sim/world_name "
+                    "must still match the <world name='...'> attribute in that file."
             ),
         ),
         DeclareLaunchArgument(

@@ -6,8 +6,12 @@ from launch_ros.actions import Node
 
 def launch_setup(context):
 
+    pos_x = LaunchConfiguration("pos_x").perform(context)
+    pos_y = LaunchConfiguration("pos_y").perform(context)
+    pos_z = LaunchConfiguration("pos_z").perform(context)
     robot_name = LaunchConfiguration("robot_name").perform(context)
-    world = LaunchConfiguration("world").perform(context)
+    world_name = LaunchConfiguration("world_name").perform(context)
+    world_path = LaunchConfiguration("world_path").perform(context)
     verbose = LaunchConfiguration("verbose").perform(context)
     headless = LaunchConfiguration("headless").perform(context)
 
@@ -19,7 +23,8 @@ def launch_setup(context):
         ]),
         launch_arguments={
             "robot_name": robot_name,
-            "world_name": world,
+            "world_name": world_name,
+            "world_path": world_path,
             "verbose": verbose,
             "headless": headless,
         }.items()
@@ -32,11 +37,11 @@ def launch_setup(context):
         ]),
         launch_arguments={
             "robot_name": robot_name,
-            "world_name": world,
+            "world_name": world_name,
             "verbose": verbose,
-            "pos_x": "0.0",
-            "pos_y": "0.0",
-            "pos_z": "0.2",
+            "pos_x": pos_x,
+            "pos_y": pos_y,
+            "pos_z": pos_z,
             "view_follow": LaunchConfiguration("view_follow"),
             "enable/camera/front": LaunchConfiguration("enable/camera/front"),
             "enable/tof/front": LaunchConfiguration("enable/tof/front"),
@@ -70,14 +75,11 @@ def generate_launch_description() -> LaunchDescription:
             "pos_z"
         ),
         DeclareLaunchArgument(
-            "world",
-            choices=[
-                "empty",
-                "small_loop",
-                "small_map",
-                "large_map",
-                "straight_lane"
-            ]
+            "world_name",
+        ),
+        DeclareLaunchArgument(
+            "world_path",
+            default_value=""
         ),
         DeclareLaunchArgument(
             "headless"
