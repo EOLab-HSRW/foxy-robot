@@ -69,6 +69,7 @@ def launch_setup(context) -> list[object]:
             "world_path": LaunchConfiguration("sim/world_path"),
             "headless": LaunchConfiguration("sim/headless"),
             "view_follow": LaunchConfiguration("sim/view_follow"),
+            "gz_client_gui_path": LaunchConfiguration("sim/gz_client_gui_path"),
         }
     elif (system == "hw"):
         pkg = "foxy_bringup_hw"
@@ -227,6 +228,13 @@ def generate_launch_description() -> LaunchDescription:
             description=(
                 "Make the simulator GUI camera follow the spawned drone."
                 "Ignore if sim/headless:=true."
+            )
+        ),
+        DeclareLaunchArgument(
+            name="sim/gz_client_gui_path",
+            default_value="",
+            description=(
+                "Pass the path of a custom Gazebo client configuration file."
             )
         ),
         OpaqueFunction(function=launch_setup)

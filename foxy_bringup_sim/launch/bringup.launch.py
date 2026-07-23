@@ -14,6 +14,7 @@ def launch_setup(context):
     world_path = LaunchConfiguration("world_path").perform(context)
     verbose = LaunchConfiguration("verbose").perform(context)
     headless = LaunchConfiguration("headless").perform(context)
+    gz_client_gui_path = LaunchConfiguration("gz_client_gui_path").perform(context)
 
     launch_world = IncludeLaunchDescription(
         PathJoinSubstitution([
@@ -27,6 +28,7 @@ def launch_setup(context):
             "world_path": world_path,
             "verbose": verbose,
             "headless": headless,
+            "gz_client_gui_path": gz_client_gui_path,
         }.items()
     )
     spawn_robot = IncludeLaunchDescription(
@@ -86,6 +88,9 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             "view_follow"
+        ),
+        DeclareLaunchArgument(
+            "gz_client_gui_path"
         ),
         DeclareLaunchArgument(
             "enable/camera/front"

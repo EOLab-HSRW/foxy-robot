@@ -11,6 +11,7 @@ def launch_setup(context):
 
     world_name = LaunchConfiguration("world_name").perform(context)
     world_path = LaunchConfiguration("world_path").perform(context)
+    gz_client_gui_path = LaunchConfiguration("gz_client_gui_path").perform(context)
     verbose = LaunchConfiguration("verbose").perform(context) == "true"
 
     if (world_path != ""):
@@ -54,6 +55,18 @@ def launch_setup(context):
         }.items(),
     )
 
+    client_gui_config = ""
+    if (gz_client_gui_path != ""):
+        client_gui_config = gz_client_gui_path
+    else:
+        client_gui_config = PathJoinSubstitution([
+                FindPackageShare("foxy_gz"),
+                "gz-config",
+                "client-gui.config"
+        ]).perform(context)
+
+
+
     start_gz_gui = ExecuteProcess(
         name="gz_gui",
         cmd=[
@@ -63,11 +76,7 @@ def launch_setup(context):
             "-v",
             "4" if verbose else "1",
             "--gui-config",
-            PathJoinSubstitution([
-                FindPackageShare("foxy_gz"),
-                "gz-config",
-                "client-gui.config"
-            ]).perform(context)
+            client_gui_config
         ],
         condition=UnlessCondition(LaunchConfiguration("headless"))
     )
@@ -116,6 +125,9 @@ def generate_launch_description() -> LaunchDescription:
         ),
         DeclareLaunchArgument(
             name="headless",
+        ),
+        DeclareLaunchArgument(
+            name="gz_client_gui_path",
         ),
         OpaqueFunction(function=launch_setup)
     ])
