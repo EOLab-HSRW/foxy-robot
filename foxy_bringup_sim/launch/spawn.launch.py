@@ -88,7 +88,7 @@ def launch_setup(context):
                 (
                     "track_mode: FOLLOW "
                     f'follow_target: {{name: "{robot_name}"}} '
-                    "follow_offset: {x: -1.0, y: 0.0, z: 0.7}"
+                    "follow_offset: {x: -0.35, y: 0.0, z: 0.35}"
                 ),
             ],
             output="screen",
