@@ -55,14 +55,12 @@ ERROR_ALREADY_REPORTED=0
 cleanup_active_operation() {
 
   if [[ -n "${ACTIVE_COMMAND_PID:-}" ]]; then
-
     kill "$ACTIVE_COMMAND_PID" 2>/dev/null || true
     wait "$ACTIVE_COMMAND_PID" 2>/dev/null || true
     ACTIVE_COMMAND_PID=""
   fi
 
   if [[ -n "${ACTIVE_SPINNER_PID:-}" ]]; then
-
     kill "$ACTIVE_SPINNER_PID" 2>/dev/null || true
     wait "$ACTIVE_SPINNER_PID" 2>/dev/null || true
     ACTIVE_SPINNER_PID=""
@@ -98,7 +96,6 @@ run_with_spinner() {
 
     if "$@" <&"$command_stdin_fd"; then
       exec {command_stdin_fd}<&-
-
       success "$message"
       printf '\n'
       return 0
@@ -132,22 +129,18 @@ run_with_spinner() {
   (
     local -a frames=('|' '/' '-' $'\\')
     local frame_index=0
-
     while kill -0 "$command_pid" 2>/dev/null; do
       printf '\r%s[%s]%s %s' \
         "$C_BLUE" \
         "${frames[frame_index % ${#frames[@]}]}" \
         "$C_RESET" \
         "$message" >&2
-
       frame_index=$((frame_index + 1))
       sleep 0.12
     done
   ) &
-
   spinner_pid=$!
   ACTIVE_SPINNER_PID="$spinner_pid"
-
   if wait "$command_pid"; then
     exit_code=0
   else
@@ -201,6 +194,7 @@ on_error() {
   error "Command failed at line ${line_no} (exit ${exit_code})."
   exit "$exit_code"
 }
+
 trap 'on_error "$LINENO"' ERR
 trap cleanup_active_operation EXIT
 trap 'cleanup_active_operation; exit 130' INT
@@ -229,7 +223,6 @@ ask_yes_no() {
 
 confirm_phrase() {
   local prompt=$1
-
   local phrase=$2
   local answer
   require_interactive_terminal
@@ -284,27 +277,21 @@ expected_ros_for_host() {
     22.04) printf 'humble\n' ;;
     24.04) printf 'jazzy\n' ;;
     *) return 1 ;;
-
-
   esac
 }
 
 install_ros2_from_debs() {
   local distro=$1
   local ros_apt_source_version
-
   local ros_apt_source_deb="/tmp/ros2-apt-source.deb"
 
-
   section "ROS 2 ${distro^}"
-
 
   run_with_spinner \
     "Updating package lists before installing ROS 2" \
     sudo apt-get update
   run_with_spinner \
     "Installing ROS 2 repository prerequisites" \
-
     sudo apt-get install -y locales software-properties-common curl ca-certificates
 
   if ! locale charmap 2>/dev/null | grep -qi 'UTF-8'; then
@@ -312,12 +299,9 @@ install_ros2_from_debs() {
       "Generating the UTF-8 locale" \
       sudo locale-gen en_US en_US.UTF-8
 
-
     run_with_spinner \
       "Selecting the UTF-8 locale" \
       sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
-
-
     export LANG=en_US.UTF-8
   fi
   run_with_spinner \
@@ -325,7 +309,6 @@ install_ros2_from_debs() {
     sudo add-apt-repository -y universe
 
   run_with_spinner \
-
     "Refreshing package lists for the ROS 2 repository" \
     sudo apt-get update
   ros_apt_source_version="$(
@@ -355,9 +338,7 @@ install_ros2_from_debs() {
 
 
   [[ -f "/opt/ros/${distro}/setup.bash" ]] ||
-
     die "ROS 2 installation finished, but /opt/ros/${distro}/setup.bash is missing."
-
 }
 
 install_or_update_ros2_packages() {
@@ -393,6 +374,7 @@ install_common_tools() {
     python3-yaml \
     python3-vcstool
 }
+
 initialize_rosdep() {
   if [[ ! -f /etc/ros/rosdep/sources.list.d/20-default.list ]]; then
     run_with_spinner \
@@ -400,7 +382,6 @@ initialize_rosdep() {
       sudo rosdep init
   else
     success "rosdep already initialized"
-
     printf '\n'
   fi
 }
@@ -425,7 +406,6 @@ configure_gazebo_repository() {
 
   run_with_spinner \
     "Refreshing package lists for Gazebo" \
-
     sudo apt-get update
 }
 
@@ -533,9 +513,7 @@ remove_humble_fortress_conflicts() {
   warn "Gazebo Fortress or Fortress-oriented ROS packages are installed:"
   printf '  - %s\n' "${conflicts[@]}" >&2
   mapfile -t removal_plan < <(
-
     apt-get -s remove "${conflicts[@]}" 2>/dev/null |
-
       awk '/^Remv / { print $2 }' |
       sort -u
   )
@@ -566,7 +544,6 @@ EOF2
 install_harmonic_for_humble() {
   section "Gazebo Harmonic"
 
-
   remove_humble_fortress_conflicts
 
   run_with_spinner \
@@ -577,7 +554,6 @@ install_harmonic_for_humble() {
 
 git_has_tracked_changes() {
   local repo_dir=$1
-
   [[ -n "$(git -C "$repo_dir" status --porcelain --untracked-files=no)" ]]
 }
 
@@ -601,7 +577,6 @@ ensure_git_checkout() {
     branch="$(git -C "$repo_dir" symbolic-ref --quiet --short HEAD || true)"
     if [[ -z "$branch" ]]; then
       warn "${name} is on a detached HEAD; leaving it untouched."
-
       return 0
     fi
 
@@ -638,7 +613,6 @@ update_manifest_repositories() {
   local repo_path
   local repo_dir
   local -a repo_paths=()
-
   mapfile -t repo_paths < <(
     python3 - "$repos_file" <<'PY'
 import sys
@@ -755,14 +729,12 @@ build_simulation_workspace() {
   (( ${#sim_paths[@]} > 0 )) || die "Could not calculate the simulation package dependency closure."
   if [[ "$ROS_DISTRO_SELECTED" == "humble" ]]; then
     run_with_spinner \
-
       "Installing Humble simulation dependencies with rosdep" \
       rosdep install \
       -r \
       -y \
       --from-paths "${sim_paths[@]}" \
       --ignore-src \
-
       --rosdistro "$ROS_DISTRO_SELECTED" \
       --skip-keys="ros_gz_bridge ros_gz_sim"
 
