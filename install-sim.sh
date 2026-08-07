@@ -488,7 +488,6 @@ find_humble_fortress_conflicts() {
       libgz-sim6*|libgz-gui6*|libgz-transport11*|libgz-msgs8*|\
       libgz-rendering6*|libgz-sensors6*|libgz-physics5*|\
       libgz-launch5*|libgz-fuel-tools7*|libsdformat12*|sdformat12*|\
-
       ros-humble-ros-ign*|ros-humble-ros-gz*|\
       ros-humble-ign-ros2-control*|ros-humble-gz-ros2-control*)
         printf '%s\n' "$package"
